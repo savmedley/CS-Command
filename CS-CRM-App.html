@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS Command — Customer Success CRM</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+  .scrollbar-thin::-webkit-scrollbar { height: 6px; width: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  .view-section.hidden { display: none; }
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+<div class="flex h-screen overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
+    <div class="h-16 flex items-center px-6 border-b border-slate-200 gap-2">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">CS</div>
+      <span class="text-base font-bold text-slate-900">CS Command</span>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      <button data-view="dashboard" onclick="showView('dashboard')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        Dashboard
+      </button>
+      <button data-view="accounts" onclick="showView('accounts')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
+        Accounts Directory
+      </button>
+      <button data-view="kanban" onclick="showView('kanban')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="10" rx="1"/></svg>
+        Lifecycle Board
+      </button>
+      <button data-view="market" onclick="showView('market')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+        Market Summary
+      </button>
+    </nav>
+    <div class="p-4 border-t border-slate-200 space-y-2">
+      <p class="text-xs text-slate-400">Data stored locally in your browser (localStorage). Nothing leaves this device.</p>
+      <button onclick="resetToSeedData()" class="text-xs font-medium text-indigo-600 hover:underline">&#8635; Reset to latest sample data</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 overflow-y-auto">
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
+      <h1 id="pageTitle" class="text-xl font-semibold text-slate-900">Dashboard</h1>
+    </header>
+
+    <div class="p-8">
+
+      <!-- DASHBOARD VIEW -->
+      <section id="view-dashboard" class="view-section">
+        <div id="dashboardContent"></div>
+      </section>
+
+      <!-- ACCOUNTS VIEW -->
+      <section id="view-accounts" class="view-section hidden">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+          <div class="relative w-full md:w-96">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="searchInput" type="text" placeholder="Search by company name or market tier..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="exportCSV()" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">Export to CSV</button>
+            <button onclick="openAddEditModal()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">+ Add Account</button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 mb-5">
+          <button class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200" data-tier="All" onclick="setFilter('All')">All</button>
+          <button class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200" data-tier="Enterprise" onclick="setFilter('Enterprise')">Enterprise</button>
+          <button class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200" data-tier="Mid-Market" onclick="setFilter('Mid-Market')">Mid-Market</button>
+          <button class="filter-btn px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200" data-tier="SMB" onclick="setFilter('SMB')">SMB</button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+          <table class="w-full text-sm min-w-[900px]">
+            <thead>
+              <tr class="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
+                <th class="py-3 px-4">Company Name</th>
+                <th class="py-3 px-4">Market Tier</th>
+                <th class="py-3 px-4">ARR</th>
+                <th class="py-3 px-4">Lifecycle Stage</th>
+                <th class="py-3 px-4">Health Score</th>
+                <th class="py-3 px-4">Unresolved Tickets</th>
+                <th class="py-3 px-4">Usage Drop</th>
+                <th class="py-3 px-4">Next Renewal</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="accountsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- KANBAN VIEW -->
+      <section id="view-kanban" class="view-section hidden">
+        <div id="kanbanContent"></div>
+      </section>
+
+      <!-- MARKET SUMMARY VIEW -->
+      <section id="view-market" class="view-section hidden">
+        <div id="marketContent"></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- Modal root -->
+<div id="modalRoot"></div>
+
+<script>
+  const STORAGE_KEY = 'csCrmAccounts';
+  const STAGES = ['Implementation/Onboarding', 'Training/Adoption', 'Steady State', 'Renewal Prep'];
+  const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
+  const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
+
+  // Real per-market (DMA) Days Active / Data Loads totals (Jan-Sep), pulled from
+  // "Weekly Usage Review - Master.xlsx" on 2026-09-18. AMCN is organized by division
+  // (AMC/National), not by DMA, so it has no market-level rows in that workbook.
+  const MARKET_USAGE_DATA = {"AMC Networks (AMCN)":[],"Nexstar Media Group":[{"name":"Champaign","daysActive":147,"dataLoads":1498},{"name":"Indianapolis","daysActive":79,"dataLoads":768},{"name":"Myrtle Beach","daysActive":37,"dataLoads":281},{"name":"WXIN","daysActive":30,"dataLoads":263},{"name":"Tampa","daysActive":24,"dataLoads":160}],"Sinclair Broadcast Group":[{"name":"Baltimore, MD","daysActive":927,"dataLoads":27291},{"name":"Abilene, TX","daysActive":811,"dataLoads":14737},{"name":"Richmond, VA","daysActive":800,"dataLoads":11013},{"name":"Providence, RI","daysActive":708,"dataLoads":6265},{"name":"Bakersfield, CA","daysActive":662,"dataLoads":35937},{"name":"Washington, DC","daysActive":575,"dataLoads":4509},{"name":"Portland, OR","daysActive":511,"dataLoads":13058},{"name":"Greenville, NC","daysActive":506,"dataLoads":5088},{"name":"Amarillo, TX","daysActive":474,"dataLoads":12242},{"name":"(unmapped station)","daysActive":465,"dataLoads":5463},{"name":"Birmingham, AL","daysActive":414,"dataLoads":3606},{"name":"Corpus Christi, TX","daysActive":414,"dataLoads":7002},{"name":"Salt Lake City, UT","daysActive":398,"dataLoads":2675},{"name":"Toledo, OH","daysActive":389,"dataLoads":4849},{"name":"Traverse City, MI","daysActive":355,"dataLoads":7200},{"name":"Cincinnati, OH","daysActive":351,"dataLoads":7019},{"name":"Chattanooga, TN","daysActive":344,"dataLoads":7512},{"name":"Greensboro, NC","daysActive":339,"dataLoads":2778},{"name":"Austin, TX","daysActive":336,"dataLoads":3226},{"name":"Roanoke/Lynchburg, VA","daysActive":297,"dataLoads":2746},{"name":"Wilkes-Barre, PA","daysActive":297,"dataLoads":5252},{"name":"Grand Rapids, MI","daysActive":296,"dataLoads":6572},{"name":"Albany, NY","daysActive":292,"dataLoads":3407},{"name":"West Palm Beach, FL","daysActive":287,"dataLoads":1802},{"name":"Gainesville, FL","daysActive":279,"dataLoads":7346},{"name":"San Antonio, TX","daysActive":251,"dataLoads":2411},{"name":"Columbus, OH","daysActive":245,"dataLoads":2207},{"name":"Boise, ID","daysActive":243,"dataLoads":2465},{"name":"Harrisburg, PA","daysActive":199,"dataLoads":1689},{"name":"Dayton, OH","daysActive":193,"dataLoads":2080},{"name":"Little Rock, AR","daysActive":192,"dataLoads":4272},{"name":"Charleston, WV","daysActive":188,"dataLoads":2714},{"name":"Wichita, KS","daysActive":184,"dataLoads":2607},{"name":"Oklahoma City, OK","daysActive":178,"dataLoads":2607},{"name":"Steubenville, OH","daysActive":166,"dataLoads":3536},{"name":"Tulsa, OK","daysActive":163,"dataLoads":2092},{"name":"El Paso, TX","daysActive":158,"dataLoads":1456},{"name":"Cedar Rapids, IA","daysActive":153,"dataLoads":2363},{"name":"Lincoln, NE","daysActive":151,"dataLoads":1213},{"name":"Columbia, MO","daysActive":138,"dataLoads":1357},{"name":"Fresno, CA","daysActive":138,"dataLoads":1965},{"name":"Seattle, WA (TV)","daysActive":134,"dataLoads":2535},{"name":"Butte, MT","daysActive":132,"dataLoads":1663},{"name":"Nashville, TN","daysActive":132,"dataLoads":2039},{"name":"Pensacola, FL","daysActive":132,"dataLoads":605},{"name":"Eugene, OR","daysActive":128,"dataLoads":3417},{"name":"Buffalo, NY","daysActive":117,"dataLoads":1340},{"name":"Mobile, AL","daysActive":108,"dataLoads":771},{"name":"Missoula, MT","daysActive":106,"dataLoads":1281},{"name":"Tri Cities, TN","daysActive":106,"dataLoads":1742},{"name":"Macon, GA","daysActive":100,"dataLoads":647},{"name":"Madison, WI","daysActive":99,"dataLoads":1096},{"name":"Asheville, NC","daysActive":96,"dataLoads":1169},{"name":"Portland, ME","daysActive":95,"dataLoads":1199},{"name":"Green Bay, WI","daysActive":94,"dataLoads":629},{"name":"Reno, NV","daysActive":92,"dataLoads":1399},{"name":"Des Moines, IA","daysActive":86,"dataLoads":1490},{"name":"Norfolk, VA","daysActive":86,"dataLoads":536},{"name":"South Bend, IN","daysActive":85,"dataLoads":912},{"name":"Redding, CA","daysActive":77,"dataLoads":1307},{"name":"Medford, OR","daysActive":74,"dataLoads":905},{"name":"Pittsburgh, PA","daysActive":70,"dataLoads":908},{"name":"Syracuse, NY","daysActive":64,"dataLoads":810},{"name":"Sioux City, IA","daysActive":60,"dataLoads":837},{"name":"Savannah, GA","daysActive":58,"dataLoads":761},{"name":"Flint, MI","daysActive":56,"dataLoads":540},{"name":"Rochester, NY","daysActive":50,"dataLoads":522},{"name":"Omaha, NE","daysActive":47,"dataLoads":471},{"name":"Las Vegas, NV","daysActive":44,"dataLoads":344},{"name":"Minneapolis, MN","daysActive":42,"dataLoads":386},{"name":"Beaumont, TX","daysActive":38,"dataLoads":510},{"name":"Charleston, SC","daysActive":37,"dataLoads":249},{"name":"Columbia, SC","daysActive":36,"dataLoads":454},{"name":"Johnstown, PA","daysActive":30,"dataLoads":516},{"name":"Myrtle Beach, SC","daysActive":24,"dataLoads":132},{"name":"Raleigh, NC","daysActive":21,"dataLoads":180},{"name":"Yakima, WA","daysActive":3,"dataLoads":22}],"Hearst Television":[{"name":"BURLINGTON-PLATTSBURGH","daysActive":609,"dataLoads":4225},{"name":"PITTSBURGH","daysActive":391,"dataLoads":5964},{"name":"NEW ORLEANS","daysActive":157,"dataLoads":1332},{"name":"lOUISVILLE","daysActive":108,"dataLoads":874},{"name":"CINCINNATI","daysActive":83,"dataLoads":843},{"name":"DES MOINES-AMES","daysActive":78,"dataLoads":464},{"name":"HARRISBURG-LNCSTR-lEB-YORK","daysActive":73,"dataLoads":1134},{"name":"Boston","daysActive":71,"dataLoads":978},{"name":"WDSU","daysActive":71,"dataLoads":587},{"name":"MONTEREY-SALINAS","daysActive":40,"dataLoads":352},{"name":"ORLANDO-DAYTONA BEACH-MELBOURNE","daysActive":28,"dataLoads":294},{"name":"WEST PALM BEACH-FT. PIERCE","daysActive":28,"dataLoads":444},{"name":"BIRMINGHAM (ANN AND TUSC)","daysActive":27,"dataLoads":230},{"name":"MILWAUKEE","daysActive":23,"dataLoads":258},{"name":"KANSAS CITY","daysActive":22,"dataLoads":259},{"name":"Ft. Myers-Naples","daysActive":18,"dataLoads":162},{"name":"GREENSBORO-H.POINT-W.SALEM","daysActive":15,"dataLoads":107},{"name":"FT.SMITH-FAY-SPRNGOL-RGRS","daysActive":13,"dataLoads":70},{"name":"SACRAMNTO-STKTON-MOOESTO","daysActive":13,"dataLoads":120},{"name":"ALBUQUERQUE-SANTA FE","daysActive":12,"dataLoads":108},{"name":"OMAHA","daysActive":6,"dataLoads":29},{"name":"PORTLAND-AUBURN","daysActive":6,"dataLoads":68},{"name":"WGAL","daysActive":6,"dataLoads":157},{"name":"TAMPA-ST. PETE (SARASOTA)","daysActive":5,"dataLoads":42},{"name":"WLWT","daysActive":5,"dataLoads":79},{"name":"GREENVILLE-SPARTANBURG-ASHEVILLE-ANDERSON","daysActive":4,"dataLoads":41},{"name":"SAVANNAH","daysActive":4,"dataLoads":81},{"name":"BALTIMORE","daysActive":3,"dataLoads":14},{"name":"WMTW","daysActive":3,"dataLoads":29},{"name":"WCWG","daysActive":2,"dataLoads":11},{"name":"JACKSON, MS","daysActive":1,"dataLoads":7},{"name":"MANCHESTER","daysActive":1,"dataLoads":7}],"Entravision Communications":[{"name":"Albuquerque","daysActive":899,"dataLoads":18072},{"name":"Boston","daysActive":198,"dataLoads":3027},{"name":"Denver","daysActive":146,"dataLoads":1370},{"name":"Las Vegas","daysActive":101,"dataLoads":1350},{"name":"KCEC-TV","daysActive":57,"dataLoads":550},{"name":"El Centro","daysActive":36,"dataLoads":429},{"name":"Phoenix","daysActive":26,"dataLoads":263},{"name":"KFUE-FM","daysActive":6,"dataLoads":93},{"name":"McAllen","daysActive":6,"dataLoads":25},{"name":"Los Angeles","daysActive":2,"dataLoads":30},{"name":"El Paso","daysActive":1,"dataLoads":32},{"name":"KLUZ-TV","daysActive":1,"dataLoads":11}],"Gray Television":[{"name":"Omaha, NE","daysActive":244,"dataLoads":2841},{"name":"Birmingham, AL","daysActive":2,"dataLoads":77},{"name":"Charlotte, NC","daysActive":1,"dataLoads":12},{"name":"Lansing, MI","daysActive":1,"dataLoads":6},{"name":"Mobile, AL","daysActive":1,"dataLoads":5},{"name":"Nashville, TN","daysActive":1,"dataLoads":11},{"name":"Sioux Falls, SD","daysActive":1,"dataLoads":14}],"Renda Broadcasting":[{"name":"Ft. Myers","daysActive":52,"dataLoads":537}],"Capitol Broadcasting Company":[{"name":"WRAL","daysActive":29,"dataLoads":326},{"name":"Raleigh","daysActive":13,"dataLoads":111}],"Paramount Global":[]};
+
+  // Real recent-call info, per market, pulled from the "Hearst" Trello board (dated touchpoint
+  // cards, one per market/station contact group) on 2026-09-18 - this is the org's actual meeting-
+  // notes source, richer than the Outlook calendar (subjects/dates only) used in an earlier pass.
+  // Trello list names use station call signs (confirmed: WTAE = Pittsburgh, per user) - the
+  // PITTSBURGH usage row above already has WTAE's usage totals merged in. BIRMINGHAM (ANN AND TUSC)
+  // has a Trello list but its one card has no text logged, so it's left blank rather than guessed.
+  const MARKET_CALL_DATA = {
+    "Hearst Television": {
+      "CINCINNATI": "2026-09-16 (Trello): The meeting focused on validating Q4 political rates, establishing preliminary Q1 2027 rates, and reviewing tools for monitoring rate changes and violations.",
+      "lOUISVILLE": "2026-09-08 (Trello): RateOptics and Hearst Louisville discussed concerns that the Q1 outlook is overly optimistic relative to recent ratings erosion, with a plan to reassess rates and prepare for future increases.",
+      "HARRISBURG-LNCSTR-lEB-YORK": "2026-09-02 (Trello): 2nd week in October wants to set Q1 rate cards - GM wants to get involved as well",
+      "WEST PALM BEACH-FT. PIERCE": "2026-08-28 (Trello): RateOptics training focused on establishing a shared rate-card workflow for the West Palm Beach team, with the rate card as the first priority before expanding into manager tools and Ada.",
+      "ORLANDO-DAYTONA BEACH-MELBOURNE": "2026-08-25 (Trello): cancelled this call",
+      "DES MOINES-AMES": "2026-08-18 (Trello): RateOptics and Hearst Des Moines discussed how to manage rates, inventory, and forecasting during an unusually large political revenue period.",
+      "NEW ORLEANS": "2026-07-24 (Trello): We set up the Q3 rate card auto emails for Friday mornings. We'll update the Q4 card to reflect the p-code structure you shared on the call.",
+      "MONTEREY-SALINAS": "2026-07-24 (Trello): The conversation began with the immediate staffing gap at Hearst Monterey and the fact that Brandon had been manually recreating the seller-preferred legacy Excel rate card after users pushed back on the RateOptics-native format.",
+      "GREENVILLE-SPARTANBURG-ASHEVILLE-ANDERSON": "2026-07-22 (Trello): Andrew said they're using RateOptics as a decision-support tool during weekly manager rate-card meetings, and they want to keep that manager review process rather than fully replace it.",
+      "BURLINGTON-PLATTSBURGH": "2026-07-10 (Trello): showed HIP report - follow up AE training scheduled",
+      "PITTSBURGH": "2026-07-01 (Trello): reviewed WOMs update - need to figure out pending business (EB to talk to Mark) - hard pending is 75% likely to close",
+      "Boston": "2026-06-26 (Trello): next time do HIP - aida is good for c level clients, but not quite A or B level - want an insight to filter to ITN metrics",
+      "PORTLAND-AUBURN": "2026-05-15 (Trello): Lynn and Warren have decided that they don't want to officially move to the RateOptics rate card until 2027 - too many balls in the air with political and multi-tier cards right now.",
+      "MANCHESTER": "2026-03-04 (Trello): Sherry reported that April sellout rates looked inflated because broad and daypart rotators were being included - set up political rate card with correct tiers."
+    }
+  };
+
+  function buildMarkets(companyName) {
+    const callData = MARKET_CALL_DATA[companyName] || {};
+    return (MARKET_USAGE_DATA[companyName] || []).map(m => ({
+      name: m.name,
+      daysActive: m.daysActive,
+      dataLoads: m.dataLoads,
+      mostUsedModule: '',
+      leastUsedModule: '',
+      aeUsage: '',
+      pCodeQuarters: '',
+      recentEmail: '',
+      recentCall: callData[m.name] || ''
+    }));
+  }
+
+  let accounts = [];
+  let currentFilter = 'All';
+  let searchQuery = '';
+  let editingAccountId = null;
+  let profileAccountId = null;
+  let marketsModalAccountId = null;
+  let marketsSearchQuery = '';
+
+  // ---------- Persistence ----------
+  function uuid() {
+    return 'acc_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+  }
+
+  // ARR and Next Renewal Date come from "Media Customer CS List 2025-09-30" (Summary tab).
+  // That file is ~1 year old as of today, so several contract end dates in it have already
+  // passed - treat renewal dates as directional and confirm before using them for real renewal
+  // planning. Nexstar and Paramount are not in that list at all (likely too new / not yet signed)
+  // so their ARR/renewal stay as explicit placeholders. Lifecycle stage, health score and usage
+  // drop are derived from real Jan-Sep RateOptics usage trend data (Weekly Usage Review - Master.xlsx).
+  // Unresolved ticket counts are real, pulled from Jira project RO on 2026-09-18. Account Strategy
+  // text is built from the same CS List's real "Growth Area" / "Persona" columns.
+  function seedAccounts() {
+    return [
+      { id: uuid(), companyName: 'AMC Networks (AMCN)', marketTier: 'Enterprise', arr: 205000, lifecycleStage: 'Steady State', healthScore: 'Yellow', unresolvedTickets: 6, usageDrop: true, nextRenewalDate: '2025-11-13', accountStrategy: 'Growth opportunity: AIDA (+$150,020 potential ARR).', touchpoints: [], markets: buildMarkets('AMC Networks (AMCN)') },
+      { id: uuid(), companyName: 'Nexstar Media Group', marketTier: 'Enterprise', arr: 0, lifecycleStage: 'Training/Adoption', healthScore: 'Green', unresolvedTickets: 11, usageDrop: false, nextRenewalDate: 'TBD', accountStrategy: '', touchpoints: [], markets: buildMarkets('Nexstar Media Group') },
+      { id: uuid(), companyName: 'Sinclair Broadcast Group', marketTier: 'Enterprise', arr: 679953, lifecycleStage: 'Steady State', healthScore: 'Green', unresolvedTickets: 47, usageDrop: false, nextRenewalDate: '2026-02-26', accountStrategy: 'Growth opportunity: AIDA (+$241,899 potential ARR). Persona: moving to centralization.', touchpoints: [], markets: buildMarkets('Sinclair Broadcast Group') },
+      { id: uuid(), companyName: 'Hearst Television', marketTier: 'Enterprise', arr: 384000, lifecycleStage: 'Steady State', healthScore: 'Green', unresolvedTickets: 78, usageDrop: false, nextRenewalDate: '2025-12-31', accountStrategy: 'Growth opportunity: AIDA (+$76,000 potential ARR). Persona: corporate wants standardization across markets.', touchpoints: [], markets: buildMarkets('Hearst Television') },
+      { id: uuid(), companyName: 'Entravision Communications', marketTier: 'Mid-Market', arr: 199100, lifecycleStage: 'Steady State', healthScore: 'Green', unresolvedTickets: 37, usageDrop: false, nextRenewalDate: '2026-07-15', accountStrategy: 'Growth opportunity: ProPRO (+$600,900 potential ARR). Persona: markets own all decisions.', touchpoints: [], markets: buildMarkets('Entravision Communications') },
+      { id: uuid(), companyName: 'Gray Television', marketTier: 'Enterprise', arr: 6720, lifecycleStage: 'Steady State', healthScore: 'Green', unresolvedTickets: 5, usageDrop: false, nextRenewalDate: '2027-12-31', accountStrategy: 'Growth opportunity: remaining stations + AIDA (+$793,280 potential ARR) - only ~3 of many stations contracted today. Persona: markets own all decisions.', touchpoints: [], markets: buildMarkets('Gray Television') },
+      { id: uuid(), companyName: 'Paramount Global', marketTier: 'Enterprise', arr: 0, lifecycleStage: 'Implementation/Onboarding', healthScore: 'Yellow', unresolvedTickets: 0, usageDrop: false, nextRenewalDate: 'TBD', accountStrategy: '', touchpoints: [], markets: buildMarkets('Paramount Global') },
+      { id: uuid(), companyName: 'Renda Broadcasting', marketTier: 'SMB', arr: 8945, lifecycleStage: 'Steady State', healthScore: 'Red', unresolvedTickets: 1, usageDrop: true, nextRenewalDate: '2026-03-31', accountStrategy: 'Growth opportunity: remaining stations (+$22,555 potential ARR). Persona: corporate wants standardization across markets.', touchpoints: [], markets: buildMarkets('Renda Broadcasting') },
+      { id: uuid(), companyName: 'Capitol Broadcasting Company', marketTier: 'Mid-Market', arr: 15600, lifecycleStage: 'Steady State', healthScore: 'Red', unresolvedTickets: 1, usageDrop: true, nextRenewalDate: '2026-12-31', accountStrategy: 'Growth opportunity: remaining radio stations + AIDA (+$14,100 potential ARR). Persona: markets own all decisions.', touchpoints: [], markets: buildMarkets('Capitol Broadcasting Company') }
+    ];
+  }
+
+  function loadAccounts() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.error('Failed to load accounts from localStorage', e);
+    }
+    const seeded = seedAccounts();
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+    } catch (e) {
+      console.error('Failed to write seed accounts to localStorage', e);
+    }
+    return seeded;
+  }
+
+  function saveAccounts() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
+    } catch (e) {
+      console.error('Failed to save accounts to localStorage', e);
+    }
+  }
+
+  // ---------- Helpers ----------
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function formatCurrency(n) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(n) || 0);
+  }
+
+  function tierBadge(tier) {
+    const map = { 'Enterprise': 'bg-indigo-100 text-indigo-700', 'Mid-Market': 'bg-blue-100 text-blue-700', 'SMB': 'bg-slate-200 text-slate-700' };
+    return `<span class="px-2 py-1 rounded-full text-xs font-semibold ${map[tier] || 'bg-slate-100 text-slate-600'}">${escapeHtml(tier)}</span>`;
+  }
+
+  function healthBadge(h) {
+    const map = { 'Green': 'bg-green-100 text-green-700', 'Yellow': 'bg-yellow-100 text-yellow-700', 'Red': 'bg-red-100 text-red-700' };
+    return `<span class="px-2 py-1 rounded-full text-xs font-semibold ${map[h] || 'bg-slate-100 text-slate-600'}">${escapeHtml(h)}</span>`;
+  }
+
+  // ---------- View switching ----------
+  function showView(view) {
+    document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+    document.getElementById('view-' + view).classList.remove('hidden');
+    document.querySelectorAll('.nav-link').forEach(el => {
+      if (el.dataset.view === view) {
+        el.classList.add('bg-indigo-50', 'text-indigo-700');
+        el.classList.remove('text-slate-600');
+      } else {
+        el.classList.remove('bg-indigo-50', 'text-indigo-700');
+        el.classList.add('text-slate-600');
+      }
+    });
+    const titles = { dashboard: 'Dashboard', accounts: 'Accounts Directory', kanban: 'Lifecycle Board', market: 'Market Summary' };
+    document.getElementById('pageTitle').textContent = titles[view];
+  }
+
+  // ---------- Render dispatcher ----------
+  function renderAll() {
+    renderDashboard();
+    renderAccountsTable();
+    renderKanban();
+    renderMarketSummary();
+    if (profileAccountId) renderProfileModalContent(profileAccountId);
+  }
+
+  // ---------- Dashboard ----------
+  function computeMetrics() {
+    const totalAccounts = accounts.length;
+    const arrAtRisk = accounts.filter(a => a.usageDrop || a.healthScore === 'Red').reduce((s, a) => s + Number(a.arr), 0);
+    const totalTickets = accounts.reduce((s, a) => s + Number(a.unresolvedTickets), 0);
+    const greenCount = accounts.filter(a => a.healthScore === 'Green').length;
+    const healthPct = totalAccounts ? Math.round((greenCount / totalAccounts) * 100) : 0;
+    return { totalAccounts, arrAtRisk, totalTickets, healthPct };
+  }
+
+  function healthLabel(pct) {
+    if (pct >= 70) return { label: 'Healthy', color: 'text-green-600' };
+    if (pct >= 40) return { label: 'At Risk', color: 'text-yellow-600' };
+    return { label: 'Critical', color: 'text-red-600' };
+  }
+
+  function metricCard(label, value, colorClass) {
+    return `<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">${label}</p>
+      <p class="text-2xl font-bold ${colorClass}">${value}</p>
+    </div>`;
+  }
+
+  function renderDashboard() {
+    const m = computeMetrics();
+    const hl = healthLabel(m.healthPct);
+
+    const tierRows = TIERS.map(t => {
+      const list = accounts.filter(a => a.marketTier === t);
+      const arr = list.reduce((s, a) => s + Number(a.arr), 0);
+      const tickets = list.reduce((s, a) => s + Number(a.unresolvedTickets), 0);
+      return `<tr class="border-b border-slate-100 last:border-0">
+        <td class="py-3 px-4 font-medium text-slate-800">${t}</td>
+        <td class="py-3 px-4 text-slate-600">${list.length}</td>
+        <td class="py-3 px-4 text-slate-600">${formatCurrency(arr)}</td>
+        <td class="py-3 px-4 text-slate-600">${tickets}</td>
+      </tr>`;
+    }).join('');
+
+    const dropAccounts = accounts.filter(a => a.usageDrop);
+    const alertRows = dropAccounts.length ? dropAccounts.map(a => `
+      <div class="flex items-center justify-between py-3 px-4 border-b border-slate-100 last:border-0">
+        <div>
+          <button onclick="openProfileModal('${a.id}')" class="font-medium text-indigo-600 hover:underline">${escapeHtml(a.companyName)}</button>
+          <span class="ml-2 text-xs text-slate-500">${escapeHtml(a.marketTier)} &middot; ${formatCurrency(a.arr)} ARR</span>
+        </div>
+        <span class="inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-red-100 px-2 py-1 rounded-full">&#9888; Usage Drop</span>
+      </div>`).join('') : `<div class="py-6 px-4 text-sm text-slate-400 text-center">No usage-drop alerts. All clear.</div>`;
+
+    document.getElementById('dashboardContent').innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        ${metricCard('Total Managed Accounts', m.totalAccounts, 'text-slate-900')}
+        ${metricCard('ARR At Risk', formatCurrency(m.arrAtRisk), 'text-red-600')}
+        ${metricCard('Total Unresolved Tickets', m.totalTickets, 'text-amber-600')}
+        ${metricCard('Overall Portfolio Health', hl.label + ' (' + m.healthPct + '%)', hl.color)}
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div class="px-5 py-4 border-b border-slate-100"><h2 class="font-semibold text-slate-900">Market Tier Breakdown</h2></div>
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-xs text-slate-500 uppercase tracking-wide">
+              <th class="py-2 px-4">Tier</th><th class="py-2 px-4">Accounts</th><th class="py-2 px-4">ARR</th><th class="py-2 px-4">Tickets</th>
+            </tr></thead>
+            <tbody>${tierRows}</tbody>
+          </table>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="font-semibold text-slate-900">Usage Drop Alerts</h2>
+            <span class="text-xs font-medium text-slate-400">${dropAccounts.length} flagged</span>
+          </div>
+          <div>${alertRows}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------- Accounts Directory ----------
+  function getFilteredAccounts() {
+    return accounts.filter(a => {
+      const matchesTier = currentFilter === 'All' || a.marketTier === currentFilter;
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch = !q || a.companyName.toLowerCase().includes(q) || a.marketTier.toLowerCase().includes(q);
+      return matchesTier && matchesSearch;
+    });
+  }
+
+  function renderAccountsTable() {
+    const list = getFilteredAccounts();
+    const tbody = document.getElementById('accountsTableBody');
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-400">No accounts match your search/filter.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(a => `
+      <tr class="border-b border-slate-100 hover:bg-slate-50">
+        <td class="py-3 px-4"><button onclick="openProfileModal('${a.id}')" class="font-medium text-indigo-600 hover:underline">${escapeHtml(a.companyName)}</button></td>
+        <td class="py-3 px-4">${tierBadge(a.marketTier)}</td>
+        <td class="py-3 px-4 text-slate-700">${formatCurrency(a.arr)}</td>
+        <td class="py-3 px-4 text-slate-700">${escapeHtml(a.lifecycleStage)}</td>
+        <td class="py-3 px-4">${healthBadge(a.healthScore)}</td>
+        <td class="py-3 px-4 text-slate-700">${a.unresolvedTickets}</td>
+        <td class="py-3 px-4">
+          <button onclick="toggleUsageDrop('${a.id}')" class="px-2 py-1 rounded-full text-xs font-semibold ${a.usageDrop ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-500'}">${a.usageDrop ? 'Yes' : 'No'}</button>
+        </td>
+        <td class="py-3 px-4 text-slate-700">${a.nextRenewalDate}</td>
+        <td class="py-3 px-4 text-right whitespace-nowrap">
+          <button onclick="openAddEditModal('${a.id}')" class="text-slate-500 hover:text-indigo-600 text-sm font-medium mr-3">Edit</button>
+          <button onclick="deleteAccount('${a.id}')" class="text-slate-500 hover:text-red-600 text-sm font-medium">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function setFilter(tier) {
+    currentFilter = tier;
+    renderAccountsTable();
+    updateFilterButtons();
+  }
+
+  function updateFilterButtons() {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      const active = btn.dataset.tier === currentFilter;
+      btn.classList.toggle('bg-indigo-600', active);
+      btn.classList.toggle('text-white', active);
+      btn.classList.toggle('border-indigo-600', active);
+      btn.classList.toggle('bg-white', !active);
+      btn.classList.toggle('text-slate-600', !active);
+    });
+  }
+
+  function handleSearch(e) {
+    searchQuery = e.target.value;
+    renderAccountsTable();
+  }
+
+  function toggleUsageDrop(id) {
+    const a = accounts.find(x => x.id === id);
+    if (!a) return;
+    a.usageDrop = !a.usageDrop;
+    saveAccounts();
+    renderAll();
+  }
+
+  function deleteAccount(id) {
+    const a = accounts.find(x => x.id === id);
+    if (!a) return;
+    if (!confirm(`Delete ${a.companyName}? This cannot be undone.`)) return;
+    accounts = accounts.filter(x => x.id !== id);
+    saveAccounts();
+    if (profileAccountId === id) closeModal();
+    renderAll();
+  }
+
+  function csvEscape(val) {
+    const s = String(val === undefined || val === null ? '' : val);
+    if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function exportCSV() {
+    const headers = ['Company Name', 'Market Tier', 'ARR', 'Lifecycle Stage', 'Health Score', 'Unresolved Tickets', 'Usage Drop', 'Next Renewal Date'];
+    const rows = accounts.map(a => [a.companyName, a.marketTier, a.arr, a.lifecycleStage, a.healthScore, a.unresolvedTickets, a.usageDrop ? 'Yes' : 'No', a.nextRenewalDate]);
+    const csvContent = [headers, ...rows].map(row => row.map(csvEscape).join(',')).join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `cs-accounts-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------- Kanban ----------
+  function renderKanban() {
+    const container = document.getElementById('kanbanContent');
+    container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">${STAGES.map(stage => {
+      const list = accounts.filter(a => a.lifecycleStage === stage);
+      return `<div class="bg-slate-50 rounded-xl border border-slate-200 flex flex-col">
+        <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="font-semibold text-slate-800 text-sm">${stage}</h3>
+          <span class="text-xs font-medium text-slate-400 bg-white border border-slate-200 rounded-full px-2 py-0.5">${list.length}</span>
+        </div>
+        <div class="p-3 space-y-3 overflow-y-auto scrollbar-thin" style="max-height: 65vh;">
+          ${list.length ? list.map(a => kanbanCard(a)).join('') : `<p class="text-xs text-slate-400 text-center py-6">No accounts in this stage</p>`}
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  function kanbanCard(a) {
+    const flagUsage = a.usageDrop;
+    const flagTickets = Number(a.unresolvedTickets) > 3;
+    let warningText = '';
+    if (flagUsage && flagTickets) warningText = 'Usage Drop &middot; ' + a.unresolvedTickets + ' Open Tickets';
+    else if (flagUsage) warningText = 'Usage Drop';
+    else if (flagTickets) warningText = a.unresolvedTickets + ' Open Tickets';
+
+    return `<div class="bg-white rounded-lg border border-slate-200 shadow-sm p-3">
+      <div class="flex items-start justify-between mb-1 gap-2">
+        <button onclick="openProfileModal('${a.id}')" class="font-medium text-sm text-indigo-600 hover:underline text-left">${escapeHtml(a.companyName)}</button>
+        ${healthBadge(a.healthScore)}
+      </div>
+      <div class="text-xs text-slate-500 mb-2 flex items-center gap-1 flex-wrap">${tierBadge(a.marketTier)} <span>${formatCurrency(a.arr)} ARR</span></div>
+      ${warningText ? `<div class="text-xs font-semibold text-red-700 bg-red-100 rounded px-2 py-1 mb-2 inline-block">&#9888; ${warningText}</div>` : ''}
+      <select onchange="changeStage('${a.id}', this.value)" class="w-full text-xs border border-slate-200 rounded px-2 py-1 bg-slate-50">
+        ${STAGES.map(s => `<option value="${s}" ${s === a.lifecycleStage ? 'selected' : ''}>${s}</option>`).join('')}
+      </select>
+    </div>`;
+  }
+
+  function changeStage(id, stage) {
+    const a = accounts.find(x => x.id === id);
+    if (!a) return;
+    a.lifecycleStage = stage;
+    saveAccounts();
+    renderAll();
+  }
+
+  // ---------- Market Summary ----------
+  function renderMarketSummary() {
+    const container = document.getElementById('marketContent');
+    container.innerHTML = TIERS.map(tier => {
+      const list = accounts.filter(a => a.marketTier === tier);
+      const arr = list.reduce((s, a) => s + Number(a.arr), 0);
+      const tickets = list.reduce((s, a) => s + Number(a.unresolvedTickets), 0);
+      const greenCount = list.filter(a => a.healthScore === 'Green').length;
+      const yellowCount = list.filter(a => a.healthScore === 'Yellow').length;
+      const redCount = list.filter(a => a.healthScore === 'Red').length;
+      const dropCount = list.filter(a => a.usageDrop).length;
+
+      const rows = list.length ? list.map(a => marketAccountRow(a)).join('')
+        : `<p class="text-sm text-slate-400 px-5 py-6 text-center">No accounts in this tier.</p>`;
+
+      return `<div class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6">
+        <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="font-semibold text-slate-900">${tier}</h2>
+            <p class="text-xs text-slate-400">${list.length} account${list.length === 1 ? '' : 's'} &middot; ${formatCurrency(arr)} ARR &middot; ${tickets} unresolved ticket${tickets === 1 ? '' : 's'}</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs font-semibold">
+            <span class="px-2 py-1 rounded-full bg-green-100 text-green-700">${greenCount} Green</span>
+            <span class="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">${yellowCount} Yellow</span>
+            <span class="px-2 py-1 rounded-full bg-red-100 text-red-700">${redCount} Red</span>
+            ${dropCount ? `<span class="px-2 py-1 rounded-full bg-red-100 text-red-700">&#9888; ${dropCount} Usage Drop</span>` : ''}
+          </div>
+        </div>
+        <div class="divide-y divide-slate-100">${rows}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function marketAccountRow(a) {
+    const warn = a.usageDrop || Number(a.unresolvedTickets) > 3;
+    const latestTouchpoint = (a.touchpoints && a.touchpoints.length) ? a.touchpoints[a.touchpoints.length - 1] : null;
+    return `<div class="px-5 py-4">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div class="flex items-center gap-2">
+          <button onclick="openProfileModal('${a.id}')" class="font-medium text-sm text-indigo-600 hover:underline">${escapeHtml(a.companyName)}</button>
+          ${healthBadge(a.healthScore)}
+          ${warn ? `<span class="text-xs font-semibold text-red-700 bg-red-100 rounded-full px-2 py-1">&#9888; Flagged</span>` : ''}
+        </div>
+        <span class="text-xs text-slate-400">${a.lifecycleStage} &middot; ${a.unresolvedTickets} ticket${Number(a.unresolvedTickets) === 1 ? '' : 's'} &middot; ${formatCurrency(a.arr)} ARR</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        <div class="bg-slate-50 rounded-lg p-3">
+          <p class="text-xs font-semibold text-slate-500 uppercase mb-1">Account Strategy</p>
+          <p class="text-slate-700">${a.accountStrategy ? escapeHtml(a.accountStrategy) : '<span class="text-slate-400">No strategy logged yet.</span>'}</p>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-3">
+          <p class="text-xs font-semibold text-slate-500 uppercase mb-1">Recent Discussion</p>
+          <p class="text-slate-700">${latestTouchpoint ? escapeHtml(latestTouchpoint.note) : '<span class="text-slate-400">No touchpoints logged yet.</span>'}</p>
+          ${latestTouchpoint ? `<p class="text-xs text-slate-400 mt-1">${escapeHtml(latestTouchpoint.timestamp)}</p>` : ''}
+        </div>
+      </div>
+      <div class="mt-3">
+        ${(a.markets && a.markets.length)
+          ? `<button onclick="openMarketsModal('${a.id}')" class="text-xs font-medium text-indigo-600 hover:underline">View Markets (${a.markets.length}) &rarr;</button>`
+          : `<span class="text-xs text-slate-400">No per-market usage data available for this account.</span>`}
+      </div>
+    </div>`;
+  }
+
+  // ---------- Markets Drill-Down Modal ----------
+  function openMarketsModal(id) {
+    marketsModalAccountId = id;
+    marketsSearchQuery = '';
+    renderMarketsModalContent(id);
+  }
+
+  function handleMarketsSearch(e) {
+    marketsSearchQuery = e.target.value;
+    renderMarketsModalContent(marketsModalAccountId);
+  }
+
+  function renderMarketsModalContent(id) {
+    const a = accounts.find(x => x.id === id);
+    if (!a) { closeModal(); return; }
+    const q = marketsSearchQuery.trim().toLowerCase();
+    const markets = (a.markets || [])
+      .filter(m => !q || m.name.toLowerCase().includes(q))
+      .slice()
+      .sort((x, y) => y.daysActive - x.daysActive);
+
+    const rows = markets.length ? markets.map((m) => {
+      const realIdx = a.markets.indexOf(m);
+      return `<tr class="border-b border-slate-100 align-top">
+        <td class="py-2 px-3 font-medium text-slate-800 whitespace-nowrap">${escapeHtml(m.name)}</td>
+        <td class="py-2 px-3 text-slate-600 whitespace-nowrap">${m.daysActive.toLocaleString()}</td>
+        <td class="py-2 px-3 text-slate-600 whitespace-nowrap">${m.dataLoads.toLocaleString()}</td>
+        <td class="py-2 px-3"><input value="${escapeHtml(m.mostUsedModule)}" placeholder="e.g. Rate Card" onchange="updateMarketField('${a.id}', ${realIdx}, 'mostUsedModule', this.value)" class="w-32 border border-slate-200 rounded px-2 py-1 text-xs"></td>
+        <td class="py-2 px-3"><input value="${escapeHtml(m.leastUsedModule)}" placeholder="e.g. AIDA" onchange="updateMarketField('${a.id}', ${realIdx}, 'leastUsedModule', this.value)" class="w-32 border border-slate-200 rounded px-2 py-1 text-xs"></td>
+        <td class="py-2 px-3"><input value="${escapeHtml(m.aeUsage)}" placeholder="Yes/No/notes" onchange="updateMarketField('${a.id}', ${realIdx}, 'aeUsage', this.value)" class="w-24 border border-slate-200 rounded px-2 py-1 text-xs"></td>
+        <td class="py-2 px-3"><input value="${escapeHtml(m.pCodeQuarters)}" placeholder="e.g. Q2-Q4 2026" onchange="updateMarketField('${a.id}', ${realIdx}, 'pCodeQuarters', this.value)" class="w-28 border border-slate-200 rounded px-2 py-1 text-xs"></td>
+        <td class="py-2 px-3"><input value="${escapeHtml(m.recentEmail)}" placeholder="Notes + date" onchange="updateMarketField('${a.id}', ${realIdx}, 'recentEmail', this.value)" class="w-56 border border-slate-200 rounded px-2 py-1 text-xs"></td>
+        <td class="py-2 px-3"><input value="${escapeHtml(m.recentCall)}" placeholder="Notes + date" onchange="updateMarketField('${a.id}', ${realIdx}, 'recentCall', this.value)" class="w-56 border border-slate-200 rounded px-2 py-1 text-xs"></td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="9" class="py-8 text-center text-slate-400">No markets match your search.</td></tr>`;
+
+    document.getElementById('modalRoot').innerHTML = `
+    <div class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4" onclick="if(event.target===this) closeModal()">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-900">${escapeHtml(a.companyName)} &mdash; Markets</h2>
+            <p class="text-xs text-slate-400">${a.markets.length} market${a.markets.length === 1 ? '' : 's'} &middot; Days Active / Data Loads are real Jan-Sep usage totals. The remaining columns are manual notes fields &mdash; type into any cell and it saves automatically.</p>
+          </div>
+          <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+        </div>
+        <div class="px-6 py-4">
+          <input type="text" value="${escapeHtml(marketsSearchQuery)}" oninput="handleMarketsSearch(event)" placeholder="Search markets..." class="w-full max-w-xs mb-4 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          <div class="overflow-x-auto border border-slate-200 rounded-lg">
+            <table class="w-full text-sm min-w-[1100px]">
+              <thead>
+                <tr class="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200 bg-slate-50">
+                  <th class="py-2 px-3">Market</th>
+                  <th class="py-2 px-3">Days Active</th>
+                  <th class="py-2 px-3">Data Loads</th>
+                  <th class="py-2 px-3">Most-Used Module</th>
+                  <th class="py-2 px-3">Least-Used Module</th>
+                  <th class="py-2 px-3">AE Usage</th>
+                  <th class="py-2 px-3">P-Codes Set (Qtrs)</th>
+                  <th class="py-2 px-3">Recent Email</th>
+                  <th class="py-2 px-3">Recent Call</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function updateMarketField(accountId, marketIndex, field, value) {
+    const a = accounts.find(x => x.id === accountId);
+    if (!a || !a.markets || !a.markets[marketIndex]) return;
+    a.markets[marketIndex][field] = value;
+    saveAccounts();
+  }
+
+  // ---------- Add / Edit Modal ----------
+  function openAddEditModal(id) {
+    editingAccountId = id || null;
+    const a = id ? accounts.find(x => x.id === id) : null;
+    const isEdit = !!a;
+
+    document.getElementById('modalRoot').innerHTML = `
+    <div class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4" onclick="if(event.target===this) closeModal()">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-slate-900">${isEdit ? 'Edit Account' : 'Add Account'}</h2>
+          <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+        </div>
+        <form id="accountForm" onsubmit="submitAccountForm(event)" class="px-6 py-5 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Company Name</label>
+            <input type="text" name="companyName" value="${a ? escapeHtml(a.companyName) : ''}" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+            <p class="field-error text-red-600 text-xs mt-1" data-field="companyName"></p>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Market Tier</label>
+              <select name="marketTier" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                <option value="">Select...</option>
+                ${TIERS.map(t => `<option value="${t}" ${a && a.marketTier === t ? 'selected' : ''}>${t}</option>`).join('')}
+              </select>
+              <p class="field-error text-red-600 text-xs mt-1" data-field="marketTier"></p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">ARR ($)</label>
+              <input type="number" name="arr" min="0" step="1" value="${a ? a.arr : ''}" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <p class="field-error text-red-600 text-xs mt-1" data-field="arr"></p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Lifecycle Stage</label>
+              <select name="lifecycleStage" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                <option value="">Select...</option>
+                ${STAGES.map(s => `<option value="${s}" ${a && a.lifecycleStage === s ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+              <p class="field-error text-red-600 text-xs mt-1" data-field="lifecycleStage"></p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Health Score</label>
+              <select name="healthScore" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                <option value="">Select...</option>
+                ${HEALTH_SCORES.map(h => `<option value="${h}" ${a && a.healthScore === h ? 'selected' : ''}>${h}</option>`).join('')}
+              </select>
+              <p class="field-error text-red-600 text-xs mt-1" data-field="healthScore"></p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Unresolved Tickets</label>
+              <input type="number" name="unresolvedTickets" min="0" step="1" value="${a ? a.unresolvedTickets : 0}" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <p class="field-error text-red-600 text-xs mt-1" data-field="unresolvedTickets"></p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Next Renewal Date</label>
+              <input type="date" name="nextRenewalDate" value="${a ? a.nextRenewalDate : ''}" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <p class="field-error text-red-600 text-xs mt-1" data-field="nextRenewalDate"></p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="usageDropCheckbox" name="usageDrop" ${a && a.usageDrop ? 'checked' : ''} class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+            <label for="usageDropCheckbox" class="text-sm font-medium text-slate-700">Usage Drop Flagged</label>
+          </div>
+          <div class="flex justify-end gap-3 pt-2">
+            <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">${isEdit ? 'Save Changes' : 'Add Account'}</button>
+          </div>
+        </form>
+      </div>
+    </div>`;
+  }
+
+  function submitAccountForm(event) {
+    event.preventDefault();
+    const form = event.target;
+    document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+
+    const raw = {
+      companyName: form.companyName.value.trim(),
+      marketTier: form.marketTier.value,
+      arr: form.arr.value,
+      lifecycleStage: form.lifecycleStage.value,
+      healthScore: form.healthScore.value,
+      unresolvedTickets: form.unresolvedTickets.value,
+      nextRenewalDate: form.nextRenewalDate.value,
+      usageDrop: form.usageDrop.checked
+    };
+
+    let valid = true;
+    function setError(field, msg) {
+      valid = false;
+      const el = form.querySelector(`.field-error[data-field="${field}"]`);
+      if (el) el.textContent = msg;
+    }
+
+    if (!raw.companyName) setError('companyName', 'Company name is required.');
+    if (!TIERS.includes(raw.marketTier)) setError('marketTier', 'Select a market tier.');
+    if (raw.arr === '' || isNaN(Number(raw.arr)) || Number(raw.arr) < 0) setError('arr', 'Enter a valid non-negative ARR.');
+    if (!STAGES.includes(raw.lifecycleStage)) setError('lifecycleStage', 'Select a lifecycle stage.');
+    if (!HEALTH_SCORES.includes(raw.healthScore)) setError('healthScore', 'Select a health score.');
+    if (raw.unresolvedTickets === '' || isNaN(Number(raw.unresolvedTickets)) || Number(raw.unresolvedTickets) < 0 || !Number.isInteger(Number(raw.unresolvedTickets))) setError('unresolvedTickets', 'Enter a valid non-negative whole number.');
+    if (!raw.nextRenewalDate) setError('nextRenewalDate', 'Select a renewal date.');
+
+    if (!valid) return;
+
+    if (editingAccountId) {
+      const a = accounts.find(x => x.id === editingAccountId);
+      Object.assign(a, {
+        companyName: raw.companyName,
+        marketTier: raw.marketTier,
+        arr: Number(raw.arr),
+        lifecycleStage: raw.lifecycleStage,
+        healthScore: raw.healthScore,
+        unresolvedTickets: Number(raw.unresolvedTickets),
+        nextRenewalDate: raw.nextRenewalDate,
+        usageDrop: raw.usageDrop
+      });
+    } else {
+      accounts.push({
+        id: uuid(),
+        companyName: raw.companyName,
+        marketTier: raw.marketTier,
+        arr: Number(raw.arr),
+        lifecycleStage: raw.lifecycleStage,
+        healthScore: raw.healthScore,
+        unresolvedTickets: Number(raw.unresolvedTickets),
+        nextRenewalDate: raw.nextRenewalDate,
+        usageDrop: raw.usageDrop,
+        accountStrategy: '',
+        touchpoints: [],
+        markets: []
+      });
+    }
+
+    saveAccounts();
+    closeModal();
+    renderAll();
+  }
+
+  // ---------- Profile Modal ----------
+  function openProfileModal(id) {
+    profileAccountId = id;
+    renderProfileModalContent(id);
+  }
+
+  function renderProfileModalContent(id) {
+    const a = accounts.find(x => x.id === id);
+    if (!a) { closeModal(); return; }
+    const warn = a.usageDrop || Number(a.unresolvedTickets) > 3;
+
+    const touchpointsHtml = (a.touchpoints && a.touchpoints.length)
+      ? [...a.touchpoints].reverse().map(t => `
+        <div class="border-l-2 border-indigo-200 pl-4 pb-4 relative">
+          <div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-indigo-500"></div>
+          <p class="text-sm text-slate-700">${escapeHtml(t.note)}</p>
+          <p class="text-xs text-slate-400 mt-1">${escapeHtml(t.timestamp)}</p>
+        </div>`).join('')
+      : `<p class="text-sm text-slate-400">No touchpoints logged yet.</p>`;
+
+    document.getElementById('modalRoot').innerHTML = `
+    <div class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4" onclick="if(event.target===this) closeModal()">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-900">${escapeHtml(a.companyName)}</h2>
+            <p class="text-xs text-slate-400">Next Renewal: ${a.nextRenewalDate}</p>
+          </div>
+          <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+        </div>
+        <div class="px-6 py-5">
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-slate-50 rounded-lg p-4">
+              <p class="text-xs font-medium text-slate-500 uppercase mb-2">Market Tier</p>
+              ${tierBadge(a.marketTier)}
+            </div>
+            <div class="bg-slate-50 rounded-lg p-4">
+              <p class="text-xs font-medium text-slate-500 uppercase mb-2">Usage Status</p>
+              <span class="px-2 py-1 rounded-full text-xs font-semibold ${a.usageDrop ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${a.usageDrop ? 'Usage Drop' : 'Stable'}</span>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-4">
+              <p class="text-xs font-medium text-slate-500 uppercase mb-2">Unresolved Tickets</p>
+              <div class="flex items-center gap-2">
+                <button onclick="changeTicketCount('${a.id}', -1)" class="w-7 h-7 rounded-full bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 font-bold">&minus;</button>
+                <span class="font-semibold text-slate-900 w-6 text-center">${a.unresolvedTickets}</span>
+                <button onclick="changeTicketCount('${a.id}', 1)" class="w-7 h-7 rounded-full bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 font-bold">+</button>
+              </div>
+            </div>
+          </div>
+          ${warn ? `<div class="mb-6 text-sm font-semibold text-red-700 bg-red-100 rounded-lg px-3 py-2">&#9888; This account is flagged for attention (usage drop and/or high ticket volume).</div>` : ''}
+          <div class="mb-6">
+            <h3 class="font-semibold text-slate-900 mb-2">Account Strategy</h3>
+            <textarea id="strategyInput" rows="2" placeholder="e.g. Push Dynamic Rate Card adoption ahead of Q1 renewal conversation" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm resize-none">${escapeHtml(a.accountStrategy || '')}</textarea>
+            <div class="flex justify-end mt-2">
+              <button onclick="saveAccountStrategy('${a.id}')" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">Save Strategy</button>
+            </div>
+          </div>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-slate-900">Touchpoint Log</h3>
+            <span class="text-xs text-slate-400">${a.healthScore} health &middot; ${formatCurrency(a.arr)} ARR</span>
+          </div>
+          <div class="flex gap-2 mb-5">
+            <input id="touchpointInput" type="text" placeholder="e.g. Discussed usage drop in sync" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm" onkeydown="if(event.key==='Enter'){event.preventDefault();logTouchpoint('${a.id}')}">
+            <button onclick="logTouchpoint('${a.id}')" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg whitespace-nowrap">Log Touchpoint</button>
+          </div>
+          <div class="max-h-64 overflow-y-auto scrollbar-thin pr-2">
+            ${touchpointsHtml}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function changeTicketCount(id, delta) {
+    const a = accounts.find(x => x.id === id);
+    if (!a) return;
+    a.unresolvedTickets = Math.max(0, Number(a.unresolvedTickets) + delta);
+    saveAccounts();
+    renderAll();
+  }
+
+  function logTouchpoint(id) {
+    const a = accounts.find(x => x.id === id);
+    if (!a) return;
+    const input = document.getElementById('touchpointInput');
+    const note = input.value.trim();
+    if (!note) return;
+    if (!a.touchpoints) a.touchpoints = [];
+    a.touchpoints.push({
+      note,
+      timestamp: new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+    });
+    saveAccounts();
+    renderProfileModalContent(id);
+  }
+
+  function saveAccountStrategy(id) {
+    const a = accounts.find(x => x.id === id);
+    if (!a) return;
+    const input = document.getElementById('strategyInput');
+    a.accountStrategy = input.value.trim();
+    saveAccounts();
+    renderMarketSummary();
+  }
+
+  function closeModal() {
+    document.getElementById('modalRoot').innerHTML = '';
+    editingAccountId = null;
+    profileAccountId = null;
+    marketsModalAccountId = null;
+  }
+
+  // Wipes any locally-saved edits and reloads the sample data baked into this file's
+  // seedAccounts(). Use this after the app itself has been updated with new sample data,
+  // since a browser's existing localStorage otherwise takes precedence over code changes.
+  function resetToSeedData() {
+    if (!confirm('This will erase all local edits (touchpoints, strategies, market notes, added/edited accounts) and reload this file\'s built-in sample data. Continue?')) return;
+    accounts = seedAccounts();
+    saveAccounts();
+    closeModal();
+    renderAll();
+  }
+
+  // ---------- Init ----------
+  accounts = loadAccounts();
+  renderAll();
+  showView('dashboard');
+  updateFilterButtons();
+  document.getElementById('searchInput').addEventListener('input', handleSearch);
+</script>
+</body>
+</html>
