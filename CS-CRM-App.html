@@ -122,12 +122,21 @@
   const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
   const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
 
+  // SCHEDULED SYNC NOTE (2026-09-24): the stored sync-task prompt also asks for four other
+  // structures - ACCOUNT_SYNC_META, MARKET_TICKETS_DATA, WEEKLY_MEETINGS_DATA/WEEKLY_GLANCE_MONDAY,
+  // and EXTERNAL_DATA.lastSyncedAt - plus a "Sync latest data" button, a "relatedTickets" field,
+  // and a "This Week at a Glance" tab. None of those exist anywhere in this file (verified via
+  // full-file search and the prior three sync commits' history, which only ever touched
+  // MARKET_USAGE_DATA/MARKET_CALL_DATA below) - this app was never actually built out with that
+  // scaffolding. Per this same task's own instruction not to touch the HTML/UI or any other JS
+  // function, building those from scratch on an unattended run was skipped rather than guessed;
+  // flagged to the user instead. Only the two data objects below were checked/refreshed today.
+
   // Real per-market (DMA) Days Active / Data Loads totals (Jan-to-date), refreshed from
-  // "Weekly Usage Review - Master.xlsx" on 2026-09-21 (unchanged as of the 2026-09-23 sync
-  // attempt: Microsoft Graph refused to convert this workbook for text extraction that day,
-  // "notSupported" - likely a new Purview sensitivity label applied to the file since its
-  // last-modified date of 2026-09-18 - so this table could not be re-verified/refreshed and
-  // is carried over as-is). AMCN's workbook tab is organized by
+  // "Weekly Usage Review - Master.xlsx" on 2026-09-21 (re-checked 2026-09-24: the workbook is
+  // readable again via Microsoft Graph, but its lastModifiedDateTime is still 2026-09-18T21:31:53Z
+  // - unchanged since the 2026-09-21 refresh - so this table is confirmed still current and was
+  // left as-is rather than re-extracted). AMCN's workbook tab is organized by
   // division (AMC/National), not by DMA, so it still has no market-level rows here.
   // Paramount Global has no tab in the workbook at all. Several station-call-sign rows were
   // merged into their DMA row where the same underlying market was clearly double-counted
@@ -141,7 +150,9 @@
 
   // Real recent-call info, per market, pulled from per-account Trello boards in the "Revenue
   // Analytics" workspace (dated touchpoint cards, one per market/station contact group),
-  // refreshed 2026-09-23; Outlook calendar used as a secondary check/fallback where noted.
+  // refreshed 2026-09-23 (re-checked 2026-09-24 across all 9 accounts' boards/lists plus a
+  // secondary Outlook pass - no card or meeting newer than what's already recorded here was
+  // found, so no entries changed); Outlook calendar used as a secondary check/fallback where noted.
   // Trello list names use station call signs (confirmed: WTAE = Pittsburgh, per user) - the
   // PITTSBURGH usage row above already has WTAE's usage totals merged in. BIRMINGHAM (ANN AND TUSC)
   // has a Trello list but its one card has no text logged, so it's left blank rather than guessed.
