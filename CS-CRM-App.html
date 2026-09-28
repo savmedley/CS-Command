@@ -122,22 +122,22 @@
   const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
   const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
 
-  // SCHEDULED SYNC NOTE (2026-09-25): the stored sync-task prompt also asks for four other
+  // SCHEDULED SYNC NOTE (2026-09-28): the stored sync-task prompt also asks for four other
   // structures - ACCOUNT_SYNC_META, MARKET_TICKETS_DATA, WEEKLY_MEETINGS_DATA/WEEKLY_GLANCE_MONDAY,
   // and EXTERNAL_DATA.lastSyncedAt - plus a "Sync latest data" button, a "relatedTickets" field,
   // and a "This Week at a Glance" tab. None of those exist anywhere in this file (re-verified today
-  // via full-file search and the prior four sync commits' history, which only ever touched
+  // via full-file search and the prior sync commits' history, which only ever touched
   // MARKET_USAGE_DATA/MARKET_CALL_DATA below) - this app was never actually built out with that
   // scaffolding. Per this same task's own instruction not to touch the HTML/UI or any other JS
   // function, building those from scratch on an unattended run was skipped rather than guessed;
-  // flagged to the user instead (5th day running - this needs a human decision). Only the two
-  // data objects below were checked/refreshed today.
+  // flagged to the user instead (still unresolved after multiple days of runs - this needs a human
+  // decision). Only the two data objects below were checked/refreshed today.
 
   // Real per-market (DMA) Days Active / Data Loads totals (Jan-to-date), refreshed from
-  // "Weekly Usage Review - Master.xlsx" on 2026-09-21 (re-checked 2026-09-24 and again 2026-09-25:
-  // the workbook is readable via Microsoft Graph/SharePoint search, but its lastModifiedDateTime is
-  // still 2026-09-18T21:31:53Z - unchanged since the 2026-09-21 refresh - so this table is confirmed
-  // still current and was left as-is rather than re-extracted). AMCN's workbook tab is organized by
+  // "Weekly Usage Review - Master.xlsx" on 2026-09-21 (re-checked 2026-09-24, 2026-09-25, and again
+  // 2026-09-28: the workbook is readable via Microsoft Graph/SharePoint search, but its
+  // lastModifiedDateTime is still 2026-09-18T21:31:53Z - unchanged since the 2026-09-21 refresh - so
+  // this table is confirmed still current and was left as-is rather than re-extracted). AMCN's workbook tab is organized by
   // division (AMC/National), not by DMA, so it still has no market-level rows here.
   // Paramount Global has no tab in the workbook at all. Several station-call-sign rows were
   // merged into their DMA row where the same underlying market was clearly double-counted
@@ -151,28 +151,37 @@
 
   // Real recent-call info, per market, pulled from per-account Trello boards in the "Revenue
   // Analytics" workspace (dated touchpoint cards, one per market/station contact group),
-  // refreshed 2026-09-23, re-checked 2026-09-24 (no changes), and re-checked again 2026-09-25
-  // across all 9 accounts' boards/lists plus a secondary Outlook pass: Hearst's
-  // ORLANDO-DAYTONA BEACH-MELBOURNE entry updated below (the prior 8/25 call had been cancelled;
-  // Outlook shows a real, non-cancelled "WKCF Orlando" touchpoint held 2026-09-22). All other
-  // markets checked had no card or meeting newer than what's already recorded here, so those
-  // entries are unchanged; Outlook calendar used as a secondary check/fallback where noted.
-  // Trello list names use station call signs (confirmed: WTAE = Pittsburgh, per user) - the
-  // PITTSBURGH usage row above already has WTAE's usage totals merged in. BIRMINGHAM (ANN AND TUSC)
-  // has a Trello list but its one card has no text logged, so it's left blank rather than guessed.
-  // Sinclair Broadcast Group's Trello board (feature backlog, not per-market) and AMC Networks/
-  // Nexstar/Paramount Global (no Trello board) have no reliable per-market touchpoint source, so
-  // their markets are left without recentCall data rather than guessed.
+  // refreshed 2026-09-23, re-checked 2026-09-24 (no changes), 2026-09-25 (Hearst's
+  // ORLANDO-DAYTONA BEACH-MELBOURNE entry updated - the prior 8/25 call had been cancelled;
+  // Outlook showed a real, non-cancelled "WKCF Orlando" touchpoint held 2026-09-22), and re-checked
+  // again 2026-09-28: all 5 accounts with Trello boards (Hearst, Entravision, Gray, Renda, Capitol)
+  // had no card newer than what's already recorded here, but a secondary Outlook pass surfaced 3
+  // real non-cancelled touchpoints since the 09-25 check that predate the Trello cards - updated
+  // below: Hearst WEST PALM BEACH-FT. PIERCE (09-25 "RateOptics Touchpoint | Hearst West Palm
+  // Beach"), Hearst MONTEREY-SALINAS (09-25 "RateOptics Monthly Touchpoint | Hearst Monterey" -
+  // sets up a new monthly cadence), and Nexstar Indianapolis (09-25 recurring "RateOptics Training &
+  // Feedback" session). A same-day 09-28 AMCN meeting was found cancelled (skipped), and several
+  // more same-day 09-28 meetings (Entravision Denver, Entravision Las Vegas x2, Hearst Des Moines
+  // KCCI) were still on the calendar as of the sync run with no way to confirm they'd actually taken
+  // place yet, so those were left unchanged rather than guessed. All other markets checked had no
+  // card or meeting newer than what's already recorded here. Trello list names use station call
+  // signs (confirmed: WTAE = Pittsburgh, per user) - the PITTSBURGH usage row above already has
+  // WTAE's usage totals merged in. BIRMINGHAM (ANN AND TUSC) has a Trello list but its one card has
+  // no text logged, so it's left blank rather than guessed. Sinclair Broadcast Group's Trello board
+  // (feature backlog, not per-market) and AMC Networks/Paramount Global (no Trello board at all)
+  // have no reliable per-market touchpoint source, so their markets are left without recentCall data
+  // rather than guessed; Nexstar has no Trello board either but its markets' recentCall data comes
+  // from a recurring Outlook "RateOptics Training & Feedback" series per market.
   const MARKET_CALL_DATA = {
     "Hearst Television": {
       "CINCINNATI": "2026-09-16 (Trello): Validated Q4 political rates, corrected a 6-7am rate discrepancy ($425 to $415), set preliminary Q1 2027 tiered rates (2x/4x multipliers), and added NFL playoff placeholders.",
       "lOUISVILLE": "2026-09-08 (Trello): RateOptics and Hearst Louisville discussed concerns that the Q1 outlook is overly optimistic relative to recent ratings erosion, with a plan to reassess rates and prepare for future increases.",
       "HARRISBURG-LNCSTR-lEB-YORK": "2026-09-02 (Trello): 2nd week in October wants to set Q1 rate cards - GM wants to get involved as well",
-      "WEST PALM BEACH-FT. PIERCE": "2026-09-17 (Outlook): 'RateOptics Sync' meeting held with the Hearst West Palm Beach team; no detailed notes logged beyond the calendar entry.",
+      "WEST PALM BEACH-FT. PIERCE": "2026-09-25 (Outlook): 'RateOptics Touchpoint | Hearst West Palm Beach' meeting held with the Hearst West Palm Beach team; no detailed notes logged beyond the calendar entry.",
       "ORLANDO-DAYTONA BEACH-MELBOURNE": "2026-09-22 (Outlook): 'RateOptics Touchpoint | WKCF Orlando' meeting held with the Hearst Orlando team; no detailed notes logged beyond the calendar entry.",
       "DES MOINES-AMES": "2026-08-18 (Trello): RateOptics and Hearst Des Moines discussed how to manage rates, inventory, and forecasting during an unusually large political revenue period.",
       "NEW ORLEANS": "2026-07-24 (Trello): We set up the Q3 rate card auto emails for Friday mornings. We'll update the Q4 card to reflect the p-code structure you shared on the call.",
-      "MONTEREY-SALINAS": "2026-07-24 (Trello): The conversation began with the immediate staffing gap at Hearst Monterey and the fact that Brandon had been manually recreating the seller-preferred legacy Excel rate card after users pushed back on the RateOptics-native format.",
+      "MONTEREY-SALINAS": "2026-09-25 (Outlook): 'RateOptics Monthly Touchpoint | Hearst Monterey' meeting held; organizer's note sets up a new monthly touchpoint cadence going forward, no further detail logged beyond the calendar entry.",
       "GREENVILLE-SPARTANBURG-ASHEVILLE-ANDERSON": "2026-07-22 (Trello): Andrew said they're using RateOptics as a decision-support tool during weekly manager rate-card meetings, and they want to keep that manager review process rather than fully replace it.",
       "BURLINGTON-PLATTSBURGH": "2026-09-22 (Trello): RateOptics training for Alex (a new account associate) covering the Dynamic Rate Card, Advertiser Insights, and Aida proposal review; Jill and Pat remain the final decision-makers on rates.",
       "PITTSBURGH": "2026-07-01 (Trello): reviewed WOMs update - need to figure out pending business (EB to talk to Mark) - hard pending is 75% likely to close",
@@ -195,7 +204,7 @@
     },
     "Nexstar Media Group": {
       "Champaign": "2026-09-16 (Outlook): Recurring 'RateOptics Training & Feedback' session with Nexstar Champaign (WCIA); no detailed notes logged beyond the calendar entry.",
-      "Indianapolis": "2026-09-18 (Outlook): Recurring 'RateOptics Training & Feedback' session with Nexstar Indianapolis (FOX59); no detailed notes logged beyond the calendar entry.",
+      "Indianapolis": "2026-09-25 (Outlook): Recurring 'RateOptics Training & Feedback' session with Nexstar Indianapolis (FOX59); no detailed notes logged beyond the calendar entry.",
       "Myrtle Beach": "2026-09-15 (Outlook): Recurring 'RateOptics Training & Feedback' session with Nexstar Myrtle Beach (WBTW); no detailed notes logged beyond the calendar entry."
     }
   };
