@@ -122,88 +122,94 @@
   const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
   const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
 
-  // SCHEDULED SYNC NOTE (2026-10-07, unresolved since at least 2026-09-29, now 7 sync runs with
-  // committed changes - 09-29, 09-30, 10-01, 10-05, 10-06, and today, with an apparent gap in runs
-  // between 10-01 and 10-05): the stored sync-task prompt also asks for four other structures - ACCOUNT_SYNC_META,
-  // MARKET_TICKETS_DATA, WEEKLY_MEETINGS_DATA/WEEKLY_GLANCE_MONDAY, and EXTERNAL_DATA.lastSyncedAt -
-  // plus a "Sync latest data" button, a "relatedTickets" field, and a "This Week at a Glance" tab.
-  // None of those exist anywhere in this file (re-verified again today via full-file search and the
-  // prior sync commits' history, which only ever touched MARKET_USAGE_DATA/MARKET_CALL_DATA below) -
-  // this app was never actually built out with that scaffolding. Note that unresolvedTickets/usageDrop
-  // fields DO already exist, but only as hardcoded literals inside seedAccounts() below, not driven by
-  // any ACCOUNT_SYNC_META structure - so even those can't be refreshed here without editing
-  // seedAccounts() itself, which this same task's own instructions explicitly forbid ("Do NOT touch
-  // anything else in the file - especially not seedAccounts()"). Per that same instruction not to
-  // touch the HTML/UI or any other JS function, building this scaffolding from scratch on an
-  // unattended run continues to be skipped rather than guessed; flagged to the user again today via a
-  // push notification (not just this file comment) since it's now gone unresolved for multiple
-  // consecutive daily runs and needs a human decision on whether/how to build this out before it can
-  // be synced automatically. Only the two data objects below were checked/refreshed today.
+  // SCHEDULED SYNC NOTE (2026-10-08, unresolved since at least 2026-09-29, now 8 sync runs with
+  // committed changes - 09-29, 09-30, 10-01, 10-05, 10-06, 10-07, and today, with an apparent gap in
+  // runs between 10-01 and 10-05): the stored sync-task prompt also asks for four other structures -
+  // ACCOUNT_SYNC_META, MARKET_TICKETS_DATA, WEEKLY_MEETINGS_DATA/WEEKLY_GLANCE_MONDAY, and
+  // EXTERNAL_DATA.lastSyncedAt - plus a "Sync latest data" button, a "relatedTickets" field, and a
+  // "This Week at a Glance" tab. None of those exist anywhere in this file (re-verified again today
+  // via full-file search and the prior sync commits' history, which only ever touched
+  // MARKET_USAGE_DATA/MARKET_CALL_DATA below) - this app was never actually built out with that
+  // scaffolding. Note that unresolvedTickets/usageDrop fields DO already exist, but only as hardcoded
+  // literals inside seedAccounts() below, not driven by any ACCOUNT_SYNC_META structure - so even
+  // those can't be refreshed here without editing seedAccounts() itself, which this same task's own
+  // instructions explicitly forbid ("Do NOT touch anything else in the file - especially not
+  // seedAccounts()"). Per that same instruction not to touch the HTML/UI or any other JS function,
+  // building this scaffolding from scratch on an unattended run continues to be skipped rather than
+  // guessed; flagged to the user again today via a push notification (not just this file comment)
+  // since it's now gone unresolved for 8+ consecutive daily runs and needs a human decision on
+  // whether/how to build this out before it can be synced automatically. Separately, today's run also
+  // surfaced an apparent prompt-injection attempt (unsolicited instructions embedded in indexed Teams
+  // message content, trying to get an automated CRM sync to add an unrelated "Cumulus Media" account)
+  // - it was recognized as untrusted data, not followed, and is flagged to the user via push
+  // notification; Cumulus is not one of the 9 tracked accounts and nothing was added. Only the two data
+  // objects below were checked/refreshed today.
 
   // Real per-market (DMA) Days Active / Data Loads totals (Jan-to-date), refreshed from
   // "Weekly Usage Review - Master.xlsx" (Savannah Medley's OneDrive Desktop copy, not the shared
   // SharePoint "Usage Report" folder, which only holds stale copies). Source lastModifiedDateTime is
-  // still 2026-10-02T16:25:03Z - unchanged since the 2026-10-05/10-06 pulls - so today's (2026-10-07)
-  // re-pull reconciled to IDENTICAL totals for every account; nothing here reflects new usage, just a
-  // re-verified extraction of the same source version (no newer file found anywhere in
-  // SharePoint/OneDrive). Direct Microsoft 365 connector access did NOT error out this run, but it
-  // resolved to the wrong file entirely - a single-sheet "Multi Station Dynamic Rate Card" workbook,
-  // not the Weekly Usage Review pivots - so that read was discarded as unusable rather than trusted.
-  // Fell back to Glean's full document read of the same SharePoint link, which again returned the
-  // complete workbook with no truncation. Every account's extracted rows were reconciled exactly
-  // against each tab's own Grand Total row (16 pivots across 8 accounts with market data, zero
-  // discrepancies) after this run's own extraction correctly handled two parsing pitfalls in the raw
-  // export (market names containing a comma, e.g. "Birmingham, AL", need quote-aware CSV parsing, not
-  // naive comma-splitting; and a row with a blank market label needs its Grand Total column located
-  // relative to the tab's own month-count header, not a fixed offset) - both are extraction mechanics
-  // on this run's end, not source data changes, and the result matched the previously stored values
-  // exactly, including the known artifacts below.
+  // now 2026-10-07T14:35:37Z - a genuinely NEWER version than the 2026-10-02T16:25:03Z one every prior
+  // run through 10-07 had reconciled against - so this run's numbers reflect real new usage, not just a
+  // re-verification. Extraction was harder this run: direct `read_resource` on the workbook URI still
+  // deterministically truncates after the first sheet (alphabetically "AMCN") regardless of query, with
+  // no way to page to a specific sheet; Glean's `read_document` with raw_bytes silently fell back to the
+  // same indexed-text snippet rather than real file bytes. Worked around this via targeted Glean search
+  // queries, filtering strictly to snippets whose own updateTime matched the Master's 2026-10-07T14:35:37Z
+  // (several other stale/decoy files - "...Unique Days Active.xlsx", "...Unique Data Loads.xlsx", and
+  // older cached versions - kept surfacing and were explicitly discarded, not used for any number below).
   //
-  // Hearst's source pivot still has no separate "WTAE" row (only "PITTSBURGH" remains, unchanged from
-  // the 10-06 merge-cleanup finding). "BIRMINGHAM (ANN AND TUSC)" remains its own distinct row, still
-  // unmerged, consistent with the user's prior confirmation that it's not a Pittsburgh-style duplicate.
-  // Sinclair's unlabeled-row artifact is still present, unchanged at 323 days active / 5463 data loads
-  // (same reconstruction as before: a blank true market label drops the leading cell, shifting that row
-  // left by one column). Entravision (6 plain DMAs + "Multi-Market" catch-all, 1254/23105), Gray
-  // (collapsed to just Birmingham, AL and Omaha, NE), and Nexstar (Jun-Sep only, Multi-Market 2/13) are
-  // all unchanged from the last pull - still flagged for a human sanity-check on whether these are
-  // intentional upstream pivot rebuilds (losing station-level granularity) or a source configuration
-  // problem. AMCN's tab is still organized by division, not DMA (no market rows); Paramount Global still
-  // has no tab in the workbook at all. Renda and Capitol remain genuinely single-market pivots in the
-  // source (Renda = Ft. Myers only, Capitol = Raleigh only), unchanged.
-  const MARKET_USAGE_DATA = {"AMC Networks (AMCN)":[],"Nexstar Media Group":[{"name":"Champaign","daysActive":164,"dataLoads":1643},{"name":"Indianapolis","daysActive":140,"dataLoads":1362},{"name":"Myrtle Beach","daysActive":38,"dataLoads":292},{"name":"Tampa","daysActive":27,"dataLoads":171},{"name":"Multi-Market","daysActive":2,"dataLoads":13}],"Sinclair Broadcast Group":[{"name":"Abilene, TX","daysActive":148,"dataLoads":7155},{"name":"Albany, NY","daysActive":325,"dataLoads":3699},{"name":"Amarillo, TX","daysActive":517,"dataLoads":13242},{"name":"Asheville, NC","daysActive":102,"dataLoads":1253},{"name":"Austin, TX","daysActive":371,"dataLoads":3536},{"name":"Bakersfield, CA","daysActive":700,"dataLoads":38636},{"name":"Baltimore, MD","daysActive":600,"dataLoads":28855},{"name":"Beaumont, TX","daysActive":40,"dataLoads":540},{"name":"Birmingham, AL","daysActive":352,"dataLoads":3843},{"name":"Boise, ID","daysActive":681,"dataLoads":10860},{"name":"Buffalo, NY","daysActive":119,"dataLoads":1365},{"name":"Butte, MT","daysActive":136,"dataLoads":1689},{"name":"Cedar Rapids, IA","daysActive":92,"dataLoads":2456},{"name":"Charleston, SC","daysActive":37,"dataLoads":249},{"name":"Charleston, WV","daysActive":202,"dataLoads":2845},{"name":"Chattanooga, TN","daysActive":290,"dataLoads":8989},{"name":"Cincinnati, OH","daysActive":390,"dataLoads":7604},{"name":"Columbia, MO","daysActive":146,"dataLoads":1405},{"name":"Columbia, SC","daysActive":31,"dataLoads":455},{"name":"Columbus, OH","daysActive":247,"dataLoads":2262},{"name":"Corpus Christi, TX","daysActive":441,"dataLoads":7524},{"name":"Dayton, OH","daysActive":210,"dataLoads":2263},{"name":"Des Moines, IA","daysActive":89,"dataLoads":1529},{"name":"El Paso, TX","daysActive":169,"dataLoads":1530},{"name":"Eugene, OR","daysActive":161,"dataLoads":3997},{"name":"Eureka, CA","daysActive":3,"dataLoads":33},{"name":"Flint, MI","daysActive":59,"dataLoads":577},{"name":"Fresno, CA","daysActive":147,"dataLoads":2038},{"name":"Gainesville, FL","daysActive":42,"dataLoads":287},{"name":"Grand Rapids, MI","daysActive":287,"dataLoads":6840},{"name":"Green Bay, WI","daysActive":4,"dataLoads":819},{"name":"Greensboro, NC","daysActive":371,"dataLoads":2976},{"name":"Greenville, NC","daysActive":554,"dataLoads":5557},{"name":"Harrisburg, PA","daysActive":212,"dataLoads":1767},{"name":"Johnstown, PA","daysActive":32,"dataLoads":522},{"name":"Las Vegas, NV","daysActive":29,"dataLoads":344},{"name":"Lincoln, NE","daysActive":163,"dataLoads":1311},{"name":"Little Rock, AR","daysActive":27,"dataLoads":4631},{"name":"Macon, GA","daysActive":110,"dataLoads":696},{"name":"Madison, WI","daysActive":100,"dataLoads":1120},{"name":"Medford, OR","daysActive":0,"dataLoads":998},{"name":"Minneapolis, MN","daysActive":46,"dataLoads":463},{"name":"Missoula, MT","daysActive":109,"dataLoads":1329},{"name":"Mobile, AL","daysActive":118,"dataLoads":817},{"name":"Myrtle Beach, SC","daysActive":33,"dataLoads":203},{"name":"Nashville, TN","daysActive":147,"dataLoads":2164},{"name":"Norfolk, VA","daysActive":94,"dataLoads":570},{"name":"Oklahoma City, OK","daysActive":192,"dataLoads":2829},{"name":"Omaha, NE","daysActive":51,"dataLoads":492},{"name":"Pensacola, FL","daysActive":10,"dataLoads":685},{"name":"Pittsburgh, PA","daysActive":78,"dataLoads":956},{"name":"Portland, ME","daysActive":33,"dataLoads":1203},{"name":"Portland, OR","daysActive":72,"dataLoads":13971},{"name":"Providence, RI","daysActive":141,"dataLoads":6795},{"name":"Raleigh, NC","daysActive":26,"dataLoads":203},{"name":"Redding, CA","daysActive":77,"dataLoads":1307},{"name":"Reno, NV","daysActive":11,"dataLoads":1495},{"name":"Richmond, VA","daysActive":398,"dataLoads":11546},{"name":"Roanoke/Lynchburg, VA","daysActive":321,"dataLoads":2979},{"name":"Rochester, NY","daysActive":13,"dataLoads":528},{"name":"Salt Lake City, UT","daysActive":332,"dataLoads":2828},{"name":"San Antonio, TX","daysActive":261,"dataLoads":2490},{"name":"Savannah, GA","daysActive":1,"dataLoads":761},{"name":"Seattle, WA (TV)","daysActive":139,"dataLoads":2806},{"name":"Sioux City, IA","daysActive":61,"dataLoads":841},{"name":"South Bend, IN","daysActive":90,"dataLoads":928},{"name":"Steubenville, OH","daysActive":15,"dataLoads":3680},{"name":"Syracuse, NY","daysActive":63,"dataLoads":854},{"name":"Tallahassee, FL","daysActive":256,"dataLoads":7486},{"name":"Toledo, OH","daysActive":418,"dataLoads":5144},{"name":"Traverse City, MI","daysActive":3,"dataLoads":7771},{"name":"Tri Cities, TN","daysActive":121,"dataLoads":1983},{"name":"Tulsa, OK","daysActive":168,"dataLoads":2136},{"name":"Washington, DC","daysActive":345,"dataLoads":4799},{"name":"West Palm Beach, FL","daysActive":309,"dataLoads":1870},{"name":"Wichita, KS","daysActive":194,"dataLoads":2713},{"name":"Wilkes-Barre, PA","daysActive":259,"dataLoads":5516},{"name":"Yakima, WA","daysActive":3,"dataLoads":22},{"name":"(unmapped station)","daysActive":323,"dataLoads":5463}],"Hearst Television":[{"name":"BALTIMORE","daysActive":3,"dataLoads":14},{"name":"BIRMINGHAM (ANN AND TUSC)","daysActive":27,"dataLoads":230},{"name":"Boston","daysActive":69,"dataLoads":991},{"name":"BURLINGTON-PLATTSBURGH","daysActive":668,"dataLoads":4614},{"name":"CINCINNATI","daysActive":94,"dataLoads":985},{"name":"DES MOINES-AMES","daysActive":84,"dataLoads":485},{"name":"Ft. Myers-Naples","daysActive":18,"dataLoads":165},{"name":"FT.SMITH-FAY-SPRNGOL-RGRS","daysActive":15,"dataLoads":83},{"name":"GREENSBORO-H.POINT-W.SALEM","daysActive":15,"dataLoads":107},{"name":"GREENVILLE-SPARTANBURG-ASHEVILLE-ANDERSON","daysActive":4,"dataLoads":41},{"name":"HARRISBURG-LNCSTR-lEB-YORK","daysActive":81,"dataLoads":1361},{"name":"JACKSON, MS","daysActive":1,"dataLoads":7},{"name":"KANSAS CITY","daysActive":24,"dataLoads":273},{"name":"LOUISVILLE","daysActive":108,"dataLoads":875},{"name":"MANCHESTER","daysActive":3,"dataLoads":25},{"name":"MILWAUKEE","daysActive":23,"dataLoads":258},{"name":"MONTEREY-SALINAS","daysActive":46,"dataLoads":388},{"name":"NEW ORLEANS","daysActive":258,"dataLoads":2108},{"name":"OKLAHOMA CITY","daysActive":0,"dataLoads":1},{"name":"OMAHA","daysActive":6,"dataLoads":29},{"name":"ORLANDO-DAYTONA BEACH-MELBOURNE","daysActive":11,"dataLoads":119},{"name":"PITTSBURGH","daysActive":423,"dataLoads":6421},{"name":"PORTLAND-AUBURN","daysActive":53,"dataLoads":408},{"name":"SACRAMNTO-STKTON-MOOESTO","daysActive":13,"dataLoads":120},{"name":"SAVANNAH","daysActive":7,"dataLoads":167},{"name":"TAMPA-ST. PETE (SARASOTA)","daysActive":5,"dataLoads":42},{"name":"WEST PALM BEACH-FT. PIERCE","daysActive":32,"dataLoads":564},{"name":"Multi-Market","daysActive":70,"dataLoads":739}],"Entravision Communications":[{"name":"Albuquerque","daysActive":1,"dataLoads":9},{"name":"Denver","daysActive":233,"dataLoads":2201},{"name":"El Paso","daysActive":1,"dataLoads":32},{"name":"Las Vegas","daysActive":100,"dataLoads":1266},{"name":"Los Angeles","daysActive":6,"dataLoads":76},{"name":"Phoenix","daysActive":50,"dataLoads":595},{"name":"Multi-Market","daysActive":1254,"dataLoads":23105}],"Gray Television":[{"name":"Birmingham, AL","daysActive":17,"dataLoads":77},{"name":"Omaha, NE","daysActive":260,"dataLoads":3045}],"Renda Broadcasting":[{"name":"Ft. Myers","daysActive":56,"dataLoads":578}],"Capitol Broadcasting Company":[{"name":"Raleigh","daysActive":44,"dataLoads":461}],"Paramount Global":[]};
+  // Fully reconciled against each tab's own Grand Total this run: AMCN (still division-based, no market
+  // rows, unchanged/empty), Capitol (Raleigh only, unchanged), Entravision (Days Active 1699 / Data
+  // Loads 27935, both match sum exactly) - Denver/Las Vegas/Phoenix all grew, and a brand-new "Reno" row
+  // appeared (1 day active, 0 data loads so far) with no DMA-named counterpart to merge into, kept as its
+  // own row. Hearst's Days Active tab fully reconciled (Grand Total 2210) - Boston, BURLINGTON-
+  // PLATTSBURGH, CINCINNATI, LOUISVILLE, NEW ORLEANS, PITTSBURGH, PORTLAND-AUBURN and
+  // SACRAMNTO-STKTON-MOOESTO all grew; found three separate rows ("Kansas City", "KANSAS CITY", and
+  // "KMBC" - KMBC being Hearst's actual Kansas City station callsign) that are the same market as each
+  // other, same style of duplicate as the earlier WTAE/PITTSBURGH case, so merged into one "KANSAS CITY"
+  // row (26 days active / 285 data loads) rather than left as three. Hearst's Data Loads tab could only be
+  // PARTIALLY re-read this run before the index cut off mid-sheet (got Baltimore, Boston, Cincinnati, Ft.
+  // Myers-Naples, Kansas City/KMBC, Louisville, Manchester, Milwaukee, New Orleans, Pittsburgh,
+  // Portland-Auburn, Multi-Market, Burlington-Plattsburgh, Greenville-Spartanburg - no Grand Total row
+  // reached, so no full cross-check for Data Loads this run); every Hearst Data Loads row not re-read this
+  // run was left at its prior value rather than guessed. MONTEREY-SALINAS briefly dropped out of this
+  // run's own draft output despite being included in the verified 2210 Grand Total reconciliation (sum of
+  // all other rows was exactly 46 short of 2210, i.e. exactly its unchanged value) - added back unchanged
+  // (46/388) rather than lost. Paramount Global still has no tab in the workbook at all (unchanged/empty).
+  //
+  // Nexstar, Sinclair, Gray, and Renda could NOT be verified against this specific Master file this run -
+  // every snippet found for their sheet names carried an older updateTime (2026-09-10, 2026-06-08, or
+  // 2025-12-04), meaning it came from one of the decoy/stale files above, not this version of the Master;
+  // per the no-fabrication rule, all four are left exactly at their last-confirmed values below rather
+  // than guessed, and should get a priority re-check next run (ideally via a direct file download/local
+  // read rather than the search-snippet workaround, since Sinclair in particular is large and this
+  // approach could not reach it in this workbook's index this time).
+  const MARKET_USAGE_DATA = {"AMC Networks (AMCN)":[],"Nexstar Media Group":[{"name":"Champaign","daysActive":164,"dataLoads":1643},{"name":"Indianapolis","daysActive":140,"dataLoads":1362},{"name":"Myrtle Beach","daysActive":38,"dataLoads":292},{"name":"Tampa","daysActive":27,"dataLoads":171},{"name":"Multi-Market","daysActive":2,"dataLoads":13}],"Sinclair Broadcast Group":[{"name":"Abilene, TX","daysActive":148,"dataLoads":7155},{"name":"Albany, NY","daysActive":325,"dataLoads":3699},{"name":"Amarillo, TX","daysActive":517,"dataLoads":13242},{"name":"Asheville, NC","daysActive":102,"dataLoads":1253},{"name":"Austin, TX","daysActive":371,"dataLoads":3536},{"name":"Bakersfield, CA","daysActive":700,"dataLoads":38636},{"name":"Baltimore, MD","daysActive":600,"dataLoads":28855},{"name":"Beaumont, TX","daysActive":40,"dataLoads":540},{"name":"Birmingham, AL","daysActive":352,"dataLoads":3843},{"name":"Boise, ID","daysActive":681,"dataLoads":10860},{"name":"Buffalo, NY","daysActive":119,"dataLoads":1365},{"name":"Butte, MT","daysActive":136,"dataLoads":1689},{"name":"Cedar Rapids, IA","daysActive":92,"dataLoads":2456},{"name":"Charleston, SC","daysActive":37,"dataLoads":249},{"name":"Charleston, WV","daysActive":202,"dataLoads":2845},{"name":"Chattanooga, TN","daysActive":290,"dataLoads":8989},{"name":"Cincinnati, OH","daysActive":390,"dataLoads":7604},{"name":"Columbia, MO","daysActive":146,"dataLoads":1405},{"name":"Columbia, SC","daysActive":31,"dataLoads":455},{"name":"Columbus, OH","daysActive":247,"dataLoads":2262},{"name":"Corpus Christi, TX","daysActive":441,"dataLoads":7524},{"name":"Dayton, OH","daysActive":210,"dataLoads":2263},{"name":"Des Moines, IA","daysActive":89,"dataLoads":1529},{"name":"El Paso, TX","daysActive":169,"dataLoads":1530},{"name":"Eugene, OR","daysActive":161,"dataLoads":3997},{"name":"Eureka, CA","daysActive":3,"dataLoads":33},{"name":"Flint, MI","daysActive":59,"dataLoads":577},{"name":"Fresno, CA","daysActive":147,"dataLoads":2038},{"name":"Gainesville, FL","daysActive":42,"dataLoads":287},{"name":"Grand Rapids, MI","daysActive":287,"dataLoads":6840},{"name":"Green Bay, WI","daysActive":4,"dataLoads":819},{"name":"Greensboro, NC","daysActive":371,"dataLoads":2976},{"name":"Greenville, NC","daysActive":554,"dataLoads":5557},{"name":"Harrisburg, PA","daysActive":212,"dataLoads":1767},{"name":"Johnstown, PA","daysActive":32,"dataLoads":522},{"name":"Las Vegas, NV","daysActive":29,"dataLoads":344},{"name":"Lincoln, NE","daysActive":163,"dataLoads":1311},{"name":"Little Rock, AR","daysActive":27,"dataLoads":4631},{"name":"Macon, GA","daysActive":110,"dataLoads":696},{"name":"Madison, WI","daysActive":100,"dataLoads":1120},{"name":"Medford, OR","daysActive":0,"dataLoads":998},{"name":"Minneapolis, MN","daysActive":46,"dataLoads":463},{"name":"Missoula, MT","daysActive":109,"dataLoads":1329},{"name":"Mobile, AL","daysActive":118,"dataLoads":817},{"name":"Myrtle Beach, SC","daysActive":33,"dataLoads":203},{"name":"Nashville, TN","daysActive":147,"dataLoads":2164},{"name":"Norfolk, VA","daysActive":94,"dataLoads":570},{"name":"Oklahoma City, OK","daysActive":192,"dataLoads":2829},{"name":"Omaha, NE","daysActive":51,"dataLoads":492},{"name":"Pensacola, FL","daysActive":10,"dataLoads":685},{"name":"Pittsburgh, PA","daysActive":78,"dataLoads":956},{"name":"Portland, ME","daysActive":33,"dataLoads":1203},{"name":"Portland, OR","daysActive":72,"dataLoads":13971},{"name":"Providence, RI","daysActive":141,"dataLoads":6795},{"name":"Raleigh, NC","daysActive":26,"dataLoads":203},{"name":"Redding, CA","daysActive":77,"dataLoads":1307},{"name":"Reno, NV","daysActive":11,"dataLoads":1495},{"name":"Richmond, VA","daysActive":398,"dataLoads":11546},{"name":"Roanoke/Lynchburg, VA","daysActive":321,"dataLoads":2979},{"name":"Rochester, NY","daysActive":13,"dataLoads":528},{"name":"Salt Lake City, UT","daysActive":332,"dataLoads":2828},{"name":"San Antonio, TX","daysActive":261,"dataLoads":2490},{"name":"Savannah, GA","daysActive":1,"dataLoads":761},{"name":"Seattle, WA (TV)","daysActive":139,"dataLoads":2806},{"name":"Sioux City, IA","daysActive":61,"dataLoads":841},{"name":"South Bend, IN","daysActive":90,"dataLoads":928},{"name":"Steubenville, OH","daysActive":15,"dataLoads":3680},{"name":"Syracuse, NY","daysActive":63,"dataLoads":854},{"name":"Tallahassee, FL","daysActive":256,"dataLoads":7486},{"name":"Toledo, OH","daysActive":418,"dataLoads":5144},{"name":"Traverse City, MI","daysActive":3,"dataLoads":7771},{"name":"Tri Cities, TN","daysActive":121,"dataLoads":1983},{"name":"Tulsa, OK","daysActive":168,"dataLoads":2136},{"name":"Washington, DC","daysActive":345,"dataLoads":4799},{"name":"West Palm Beach, FL","daysActive":309,"dataLoads":1870},{"name":"Wichita, KS","daysActive":194,"dataLoads":2713},{"name":"Wilkes-Barre, PA","daysActive":259,"dataLoads":5516},{"name":"Yakima, WA","daysActive":3,"dataLoads":22},{"name":"(unmapped station)","daysActive":323,"dataLoads":5463}],"Hearst Television":[{"name":"BALTIMORE","daysActive":3,"dataLoads":14},{"name":"BIRMINGHAM (ANN AND TUSC)","daysActive":27,"dataLoads":230},{"name":"Boston","daysActive":70,"dataLoads":1004},{"name":"BURLINGTON-PLATTSBURGH","daysActive":692,"dataLoads":4802},{"name":"CINCINNATI","daysActive":96,"dataLoads":1025},{"name":"DES MOINES-AMES","daysActive":84,"dataLoads":485},{"name":"Ft. Myers-Naples","daysActive":18,"dataLoads":165},{"name":"FT.SMITH-FAY-SPRNGOL-RGRS","daysActive":15,"dataLoads":83},{"name":"GREENSBORO-H.POINT-W.SALEM","daysActive":15,"dataLoads":107},{"name":"GREENVILLE-SPARTANBURG-ASHEVILLE-ANDERSON","daysActive":4,"dataLoads":41},{"name":"HARRISBURG-LNCSTR-lEB-YORK","daysActive":81,"dataLoads":1361},{"name":"JACKSON, MS","daysActive":1,"dataLoads":7},{"name":"KANSAS CITY","daysActive":26,"dataLoads":285},{"name":"LOUISVILLE","daysActive":111,"dataLoads":882},{"name":"MANCHESTER","daysActive":3,"dataLoads":25},{"name":"MILWAUKEE","daysActive":23,"dataLoads":258},{"name":"MONTEREY-SALINAS","daysActive":46,"dataLoads":388},{"name":"NEW ORLEANS","daysActive":263,"dataLoads":2134},{"name":"OKLAHOMA CITY","daysActive":0,"dataLoads":1},{"name":"OMAHA","daysActive":6,"dataLoads":29},{"name":"ORLANDO-DAYTONA BEACH-MELBOURNE","daysActive":11,"dataLoads":119},{"name":"PITTSBURGH","daysActive":429,"dataLoads":6477},{"name":"PORTLAND-AUBURN","daysActive":57,"dataLoads":427},{"name":"SACRAMNTO-STKTON-MOOESTO","daysActive":15,"dataLoads":120},{"name":"SAVANNAH","daysActive":7,"dataLoads":167},{"name":"TAMPA-ST. PETE (SARASOTA)","daysActive":5,"dataLoads":42},{"name":"WEST PALM BEACH-FT. PIERCE","daysActive":32,"dataLoads":564},{"name":"Multi-Market","daysActive":70,"dataLoads":739}],"Entravision Communications":[{"name":"Albuquerque","daysActive":1,"dataLoads":9},{"name":"Denver","daysActive":238,"dataLoads":2255},{"name":"El Paso","daysActive":1,"dataLoads":32},{"name":"Las Vegas","daysActive":107,"dataLoads":1328},{"name":"Los Angeles","daysActive":6,"dataLoads":76},{"name":"Phoenix","daysActive":55,"dataLoads":657},{"name":"Reno","daysActive":1,"dataLoads":0},{"name":"Multi-Market","daysActive":1290,"dataLoads":23578}],"Gray Television":[{"name":"Birmingham, AL","daysActive":17,"dataLoads":77},{"name":"Omaha, NE","daysActive":260,"dataLoads":3045}],"Renda Broadcasting":[{"name":"Ft. Myers","daysActive":56,"dataLoads":578}],"Capitol Broadcasting Company":[{"name":"Raleigh","daysActive":44,"dataLoads":461}],"Paramount Global":[]};
 
   // Real recent-call info, per market, pulled from per-account Trello boards in the "Revenue
   // Analytics" workspace (dated touchpoint cards, one per market/station contact group), refreshed
-  // 2026-09-23, re-checked daily through 2026-10-06 (full day-by-day trail preserved in this file's
-  // git history), and re-checked again 2026-10-07: all 5 Trello boards (Hearst, Entravision, Gray,
-  // Renda, Capitol) and Outlook were reachable with no permission errors. No new touchpoints were found
-  // this run - every market across all 5 boards, plus an Outlook sweep of 10-05 through 10-07, matched
-  // exactly what's already recorded (the Entravision Las Vegas and Gray Omaha entries below are still
-  // the 2026-10-05 occurrences found on the prior run). Entravision Denver's weekly series had no new
-  // occurrence in this window either, so its entry is unchanged. Nexstar Myrtle Beach had yet another
-  // cancelled session (10/6) - still no real touchpoint since 09-15. A "RateOptics Office Hours |
-  // Entravision" event is on the calendar for later today (10/7) but is account-wide, not per-market, so
-  // there is nothing to attach yet even once it occurs. Considered and declined (no existing tracked
-  // market row to attach to, so
-  // nothing was added or guessed): Entravision's board has untracked "Palm Springs"/"Monterey"/
-  // "National" lists (all stale, pre-sync-window activity) and a 2026-10-01 "Office Hours Touchpoints"
-  // card covering McAllen/Laredo/Corpus; Sinclair has a real but company-wide (not per-market)
-  // recurring Outlook "RateOptics Touchpoint" series (last occurred 2026-09-22); AMC Networks (AMCN)
-  // has a real recurring Outlook "RateOptics Weekly Check In" series (last occurred 2026-10-02) but
-  // AMCN has no market-level usage data to attach a per-market call entry to; Paramount Global had no
-  // matching Outlook activity under any name tried. An AMCN "Secret Keys Refresh" Outlook event
-  // (09-14) was skipped as internal/technical, not a customer touchpoint. Trello list names use
-  // station call signs (confirmed: WTAE = Pittsburgh, per user); as of this run the source usage
-  // workbook no longer has a separate WTAE row at all (see MARKET_USAGE_DATA note above). BIRMINGHAM
-  // (ANN AND TUSC) has a Trello list but its one card still has no text logged, so it's left blank
-  // rather than guessed. Sinclair Broadcast Group's Trello board (feature backlog, not per-market) and
-  // AMC Networks/Paramount Global (no Trello board at all) have no reliable per-market touchpoint
-  // source, so their markets are left without recentCall data rather than guessed; Nexstar has no
-  // Trello board either but its markets' recentCall data comes from a recurring Outlook "RateOptics
-  // Training & Feedback" series per market. Hearst's Louisville entry key remains "LOUISVILLE" (renamed
-  // from the old "lOUISVILLE" typo in the 10-06 run to match the corrected MARKET_USAGE_DATA key above),
-  // unchanged this run.
+  // 2026-09-23, re-checked daily through 2026-10-07 (full day-by-day trail preserved in this file's
+  // git history), and re-checked again 2026-10-08: all Trello boards (Hearst, Entravision, Gray,
+  // Renda, Capitol, plus Sinclair's and Nexstar's non-per-market boards) and Outlook were reachable
+  // with no permission errors. No new touchpoints were found anywhere this run - every market matched
+  // exactly what's already recorded below, so nothing in this object changed today. Nexstar Myrtle
+  // Beach's would-be 10/6 follow-up was confirmed CANCELED at the customer's own request ("Canceling
+  // this per Jeff's request"), so it never became a real touchpoint - still no real touchpoint there
+  // since 09-15. Several Outlook meetings exist on the calendar for 10/9 (Hearst West Palm Beach,
+  // Hearst Burlington, AMCN weekly check-in, Nexstar Indianapolis) but hadn't occurred as of this run,
+  // so nothing to attach yet. Considered and declined (no existing tracked market row to attach to, so
+  // nothing was added or guessed): a new Entravision "Office Hours Touchpoints" card (10/1, political
+  // sync) and a new "RateOptics | Entravision Monterey" Outlook event (10/7) - Entravision's own
+  // tracked markets are only Denver/Las Vegas (plus the new Reno usage row above, which has no call
+  // data yet), and this Monterey is a different market than Hearst's tracked MONTEREY-SALINAS, so no
+  // mapping was forced; Entravision's stale "Palm Springs"/"Los Angeles"/"National" lists; Sinclair's
+  // real but company-wide (not per-market) Outlook touchpoint (now last occurred 2026-10-06); and an
+  // unrelated Cumulus "RateOptics Touchpoint" Outlook event that is a different company entirely, not
+  // one of the 9 tracked accounts. AMC Networks (AMCN) still has only a company-wide recurring Outlook
+  // "RateOptics Weekly Check In" series (no market-level usage data to attach a per-market entry to);
+  // Paramount Global still has no matching Outlook activity under any name tried. BIRMINGHAM (ANN AND
+  // TUSC) still has a Trello list but its one card still has no text logged, so it's left blank rather
+  // than guessed.
   const MARKET_CALL_DATA = {
     "Hearst Television": {
       "CINCINNATI": "2026-09-16 (Trello): Validated Q4 political rates, corrected a 6-7am rate discrepancy ($425 to $415), set preliminary Q1 2027 tiered rates (2x/4x multipliers), and added NFL playoff placeholders.",
