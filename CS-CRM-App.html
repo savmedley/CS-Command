@@ -39,10 +39,16 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
         Market Summary
       </button>
+      <button data-view="glance" onclick="showView('glance')" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+        This Week at a Glance
+      </button>
     </nav>
     <div class="p-4 border-t border-slate-200 space-y-2">
       <p class="text-xs text-slate-400">Data stored locally in your browser (localStorage). Nothing leaves this device.</p>
-      <button onclick="resetToSeedData()" class="text-xs font-medium text-indigo-600 hover:underline">&#8635; Reset to latest sample data</button>
+      <button onclick="syncLatestData()" class="text-xs font-medium text-indigo-600 hover:underline block">&#8635; Sync latest data</button>
+      <p id="lastSyncedLabel" class="text-xs text-slate-400"></p>
+      <button onclick="resetToSeedData()" class="text-xs font-medium text-indigo-600 hover:underline block">&#8635; Reset to latest sample data</button>
     </div>
   </aside>
 
@@ -107,6 +113,11 @@
       <!-- MARKET SUMMARY VIEW -->
       <section id="view-market" class="view-section hidden">
         <div id="marketContent"></div>
+      </section>
+
+      <!-- THIS WEEK AT A GLANCE VIEW -->
+      <section id="view-glance" class="view-section hidden">
+        <div id="glanceContent"></div>
       </section>
 
     </div>
@@ -227,8 +238,75 @@
     }
   };
 
+  // ACCOUNT_SYNC_META - real unresolvedTickets per account (Jira project RO, text~ search on the
+  // account/station name, resolution = Unresolved), pulled 2026-10-13. AMCN uses the specific phrase
+  // "AMC Networks" (2 hits) rather than bare "AMC" per the task's own guidance to prefer a specific
+  // phrase for generic/short names. Gray Television is the opposite problem: the specific phrases
+  // "Gray TV" and "Gray Television" return ZERO hits (tickets just say "Gray"), so the specific-phrase
+  // strategy silently undercounts for this account; falling back to a bare "Gray" search (37 hits) and
+  // manually excluding obvious false positives (color-adjective "grayed-out", unrelated accounts like
+  // Audacy/Rogers/Hearst, generic titles with no customer context) leaves 17 tickets that are clearly
+  // about the Gray account by title alone (e.g. "Gray: Add JT's Program Mapping Code...", "Gray Political
+  // Rate Card initialization...", "Prod Gray Dashboard regional rev"). That is a title-only pass, not a
+  // full per-ticket body read, so treat 17 as a reasonable estimate rather than an exact count. Capitol
+  // Broadcasting's bare "Capitol" search (4 hits) was kept as-is since "Capitol" is not a common English
+  // word here and false-positive risk is low. usageDrop flags are carried over unchanged from this file's
+  // prior hardcoded values: MARKET_USAGE_DATA only stores a single Jan-to-date cumulative total per
+  // market (no monthly breakdown), so the "most recent two complete months" comparison the sync task
+  // describes cannot actually be computed from what this file stores - would need the usage workbook to
+  // expose monthly columns, not just a Grand Total, to do this for real.
+  const ACCOUNT_SYNC_META = {
+    "AMC Networks (AMCN)": { unresolvedTickets: 2, usageDrop: true },
+    "Nexstar Media Group": { unresolvedTickets: 8, usageDrop: false },
+    "Sinclair Broadcast Group": { unresolvedTickets: 52, usageDrop: false },
+    "Hearst Television": { unresolvedTickets: 86, usageDrop: false },
+    "Entravision Communications": { unresolvedTickets: 29, usageDrop: false },
+    "Gray Television": { unresolvedTickets: 17, usageDrop: false },
+    "Paramount Global": { unresolvedTickets: 4, usageDrop: false },
+    "Renda Broadcasting": { unresolvedTickets: 1, usageDrop: true },
+    "Capitol Broadcasting Company": { unresolvedTickets: 4, usageDrop: true }
+  };
+
+  // MARKET_TICKETS_DATA - per-market open-ticket summaries (feeds each market's auto-managed
+  // "relatedTickets" field). Seeded empty on 2026-10-13 when this scaffolding was first built - the
+  // real per-market mapping described in the sync task (reading each ticket's full body, cross-
+  // referencing manager names against Trello contacts) is substantial per-account work that a future
+  // scheduled sync should populate incrementally; nothing was fabricated here to fill the gap.
+  const MARKET_TICKETS_DATA = {
+    "AMC Networks (AMCN)": {},
+    "Nexstar Media Group": {},
+    "Sinclair Broadcast Group": {},
+    "Hearst Television": {},
+    "Entravision Communications": {},
+    "Gray Television": {},
+    "Paramount Global": {},
+    "Renda Broadcasting": {},
+    "Capitol Broadcasting Company": {}
+  };
+
+  // Powers the "This Week at a Glance" tab. Rebuilt from scratch each sync (never merged) from the
+  // Outlook calendar for the Monday-Friday window below. WEEKLY_GLANCE_MONDAY is refreshed each run.
+  const WEEKLY_GLANCE_MONDAY = '2026-10-12';
+  const WEEKLY_MEETINGS_DATA = [
+    { id: 'mon-entravision-denver', day: 'Monday', date: '2026-10-12', time: '10:00 AM ET', company: 'Entravision Communications', label: 'Denver', attendees: 'Don Daboub, Pamela Cordero', lastCallNotes: "2026-10-12 (Outlook): Recurring 'RateOptics Political Touchpoint' meeting with Entravision Denver (Don Daboub, Pamela Cordero) - cadence continues (also held 9/14, 9/21, 9/28; skipped the week of 10/5); no detailed notes logged beyond the calendar entries." },
+    { id: 'mon-entravision-lasvegas', day: 'Monday', date: '2026-10-12', time: '1:00 PM ET', company: 'Entravision Communications', label: 'Las Vegas', attendees: 'Christopher Jordan, Nancy Shehab, Fanny Martinez, Octavio Garcia', lastCallNotes: "2026-10-12 (Outlook): Recurring 'RateOptics Touchpoint' meeting with Entravision Las Vegas (Christopher Jordan, Nancy Shehab, Fanny Martinez, Octavio Garcia) - weekly touchpoint to review violations ahead of the General Election; weekly cadence continues (also held 9/14, 9/21, 9/28, 10/5)." },
+    { id: 'mon-entravision-monterey', day: 'Monday', date: '2026-10-12', time: '4:00 PM ET', company: 'Entravision Communications', label: 'Monterey', attendees: 'Sean Stade', lastCallNotes: '(Trello, 2026-10-12) Reviewed Spark proposal-pricing discrepancies, corrected KSMS/KSCS political violations, and discussed the 2027 three-tier rate card plan; follow-up scheduled for after the political window ends.' },
+    { id: 'tue-sinclair-accountwide', day: 'Tuesday', date: '2026-10-13', time: '11:00 AM ET', company: 'Sinclair Broadcast Group', label: 'Account-wide', attendees: 'R. Sbeinstein, Robert Lewis, D. Latorre, R. Mccoy', lastCallNotes: 'No notes logged yet - Sinclair Broadcast Group’s Trello board tracks product asks and bugs, not per-call touchpoint notes.' },
+    { id: 'tue-nexstar-myrtlebeach', day: 'Tuesday', date: '2026-10-13', time: '3:00 PM ET', company: 'Nexstar Media Group', label: 'Myrtle Beach', attendees: 'J. Taylor, A. Bonnell, M. Bowman', lastCallNotes: "2026-09-15 (Outlook): Recurring 'RateOptics Training & Feedback' session with Nexstar Myrtle Beach (WBTW); no detailed notes logged beyond the calendar entry." },
+    { id: 'wed-hearst-harrisburg', day: 'Wednesday', date: '2026-10-14', time: '1:00 PM ET', company: 'Hearst Television', label: 'HARRISBURG-LNCSTR-lEB-YORK', attendees: 'Ben Warntz', lastCallNotes: '2026-09-02 (Trello): 2nd week in October wants to set Q1 rate cards - GM wants to get involved as well' },
+    { id: 'wed-paramount-cbs-kickoff', day: 'Wednesday', date: '2026-10-14', time: '2:00 PM ET', company: 'Paramount Global', label: 'Account-wide', attendees: 'Melanie Pierce, Matthew Morris, Chris Eron (+ broader CBS Yield Management team)', lastCallNotes: "No notes logged yet - Paramount Global has no Trello board tracking call notes." },
+    { id: 'thu-amcn-accountwide', day: 'Thursday', date: '2026-10-15', time: '11:00 AM ET', company: 'AMC Networks (AMCN)', label: 'Account-wide', attendees: 'Jason Baron, Cory Angerthal, Richard Bula, Marc Krok', lastCallNotes: 'No notes logged yet - AMC Networks (AMCN) has no Trello board tracking call notes.' }
+  ];
+  // NOTE found while building this: the 2026-10-14 Paramount Global meeting above ("Rate Optics Yield
+  // Kick-off") is organized by and tagged for "CBS (Paramount)" - CBS is a Paramount Global brand. Prior
+  // syncs' MARKET_CALL_DATA searches only looked for "Paramount" by name and so never found this; a
+  // future sync should also search "CBS" when checking Paramount Global's Outlook activity.
+
+  const EXTERNAL_DATA = { lastSyncedAt: '2026-10-13' };
+
   function buildMarkets(companyName) {
     const callData = MARKET_CALL_DATA[companyName] || {};
+    const ticketData = MARKET_TICKETS_DATA[companyName] || {};
     return (MARKET_USAGE_DATA[companyName] || []).map(m => ({
       name: m.name,
       daysActive: m.daysActive,
@@ -238,7 +316,9 @@
       aeUsage: '',
       pCodeQuarters: '',
       recentEmail: '',
-      recentCall: callData[m.name] || ''
+      recentCall: callData[m.name] || '',
+      relatedTickets: ticketData[m.name] || '',
+      marketTickets: ''
     }));
   }
 
@@ -259,21 +339,22 @@
   // That file is ~1 year old as of today, so several contract end dates in it have already
   // passed - treat renewal dates as directional and confirm before using them for real renewal
   // planning. Nexstar and Paramount are not in that list at all (likely too new / not yet signed)
-  // so their ARR/renewal stay as explicit placeholders. Lifecycle stage, health score and usage
-  // drop are derived from real Jan-Sep RateOptics usage trend data (Weekly Usage Review - Master.xlsx).
-  // Unresolved ticket counts are real, pulled from Jira project RO on 2026-09-18. Account Strategy
-  // text is built from the same CS List's real "Growth Area" / "Persona" columns.
+  // so their ARR/renewal stay as explicit placeholders. Lifecycle stage and health score are
+  // directional manual assessments. Unresolved ticket counts and usage-drop flags now come from
+  // ACCOUNT_SYNC_META above (real Jira RO counts, refreshed 2026-10-13) instead of being hardcoded
+  // here. Account Strategy text is built from the same CS List's real "Growth Area" / "Persona" columns.
   function seedAccounts() {
+    const meta = (name) => ACCOUNT_SYNC_META[name] || { unresolvedTickets: 0, usageDrop: false };
     return [
-      { id: uuid(), companyName: 'AMC Networks (AMCN)', marketTier: 'Enterprise', arr: 205000, lifecycleStage: 'Steady State', healthScore: 'Yellow', unresolvedTickets: 6, usageDrop: true, nextRenewalDate: '2025-11-13', accountStrategy: 'Growth opportunity: AIDA (+$150,020 potential ARR).', touchpoints: [], markets: buildMarkets('AMC Networks (AMCN)') },
-      { id: uuid(), companyName: 'Nexstar Media Group', marketTier: 'Enterprise', arr: 0, lifecycleStage: 'Training/Adoption', healthScore: 'Green', unresolvedTickets: 11, usageDrop: false, nextRenewalDate: 'TBD', accountStrategy: '', touchpoints: [], markets: buildMarkets('Nexstar Media Group') },
-      { id: uuid(), companyName: 'Sinclair Broadcast Group', marketTier: 'Enterprise', arr: 679953, lifecycleStage: 'Steady State', healthScore: 'Green', unresolvedTickets: 47, usageDrop: false, nextRenewalDate: '2026-02-26', accountStrategy: 'Growth opportunity: AIDA (+$241,899 potential ARR). Persona: moving to centralization.', touchpoints: [], markets: buildMarkets('Sinclair Broadcast Group') },
-      { id: uuid(), companyName: 'Hearst Television', marketTier: 'Enterprise', arr: 384000, lifecycleStage: 'Steady State', healthScore: 'Green', unresolvedTickets: 78, usageDrop: false, nextRenewalDate: '2025-12-31', accountStrategy: 'Growth opportunity: AIDA (+$76,000 potential ARR). Persona: corporate wants standardization across markets.', touchpoints: [], markets: buildMarkets('Hearst Television') },
-      { id: uuid(), companyName: 'Entravision Communications', marketTier: 'Mid-Market', arr: 199100, lifecycleStage: 'Steady State', healthScore: 'Green', unresolvedTickets: 37, usageDrop: false, nextRenewalDate: '2026-07-15', accountStrategy: 'Growth opportunity: ProPRO (+$600,900 potential ARR). Persona: markets own all decisions.', touchpoints: [], markets: buildMarkets('Entravision Communications') },
-      { id: uuid(), companyName: 'Gray Television', marketTier: 'Enterprise', arr: 6720, lifecycleStage: 'Steady State', healthScore: 'Green', unresolvedTickets: 5, usageDrop: false, nextRenewalDate: '2027-12-31', accountStrategy: 'Growth opportunity: remaining stations + AIDA (+$793,280 potential ARR) - only ~3 of many stations contracted today. Persona: markets own all decisions.', touchpoints: [], markets: buildMarkets('Gray Television') },
-      { id: uuid(), companyName: 'Paramount Global', marketTier: 'Enterprise', arr: 0, lifecycleStage: 'Implementation/Onboarding', healthScore: 'Yellow', unresolvedTickets: 0, usageDrop: false, nextRenewalDate: 'TBD', accountStrategy: '', touchpoints: [], markets: buildMarkets('Paramount Global') },
-      { id: uuid(), companyName: 'Renda Broadcasting', marketTier: 'SMB', arr: 8945, lifecycleStage: 'Steady State', healthScore: 'Red', unresolvedTickets: 1, usageDrop: true, nextRenewalDate: '2026-03-31', accountStrategy: 'Growth opportunity: remaining stations (+$22,555 potential ARR). Persona: corporate wants standardization across markets.', touchpoints: [], markets: buildMarkets('Renda Broadcasting') },
-      { id: uuid(), companyName: 'Capitol Broadcasting Company', marketTier: 'Mid-Market', arr: 15600, lifecycleStage: 'Steady State', healthScore: 'Red', unresolvedTickets: 1, usageDrop: true, nextRenewalDate: '2026-12-31', accountStrategy: 'Growth opportunity: remaining radio stations + AIDA (+$14,100 potential ARR). Persona: markets own all decisions.', touchpoints: [], markets: buildMarkets('Capitol Broadcasting Company') }
+      { id: uuid(), companyName: 'AMC Networks (AMCN)', marketTier: 'Enterprise', arr: 205000, lifecycleStage: 'Steady State', healthScore: 'Yellow', ...meta('AMC Networks (AMCN)'), nextRenewalDate: '2025-11-13', accountStrategy: 'Growth opportunity: AIDA (+$150,020 potential ARR).', touchpoints: [], markets: buildMarkets('AMC Networks (AMCN)') },
+      { id: uuid(), companyName: 'Nexstar Media Group', marketTier: 'Enterprise', arr: 0, lifecycleStage: 'Training/Adoption', healthScore: 'Green', ...meta('Nexstar Media Group'), nextRenewalDate: 'TBD', accountStrategy: '', touchpoints: [], markets: buildMarkets('Nexstar Media Group') },
+      { id: uuid(), companyName: 'Sinclair Broadcast Group', marketTier: 'Enterprise', arr: 679953, lifecycleStage: 'Steady State', healthScore: 'Green', ...meta('Sinclair Broadcast Group'), nextRenewalDate: '2026-02-26', accountStrategy: 'Growth opportunity: AIDA (+$241,899 potential ARR). Persona: moving to centralization.', touchpoints: [], markets: buildMarkets('Sinclair Broadcast Group') },
+      { id: uuid(), companyName: 'Hearst Television', marketTier: 'Enterprise', arr: 384000, lifecycleStage: 'Steady State', healthScore: 'Green', ...meta('Hearst Television'), nextRenewalDate: '2025-12-31', accountStrategy: 'Growth opportunity: AIDA (+$76,000 potential ARR). Persona: corporate wants standardization across markets.', touchpoints: [], markets: buildMarkets('Hearst Television') },
+      { id: uuid(), companyName: 'Entravision Communications', marketTier: 'Mid-Market', arr: 199100, lifecycleStage: 'Steady State', healthScore: 'Green', ...meta('Entravision Communications'), nextRenewalDate: '2026-07-15', accountStrategy: 'Growth opportunity: ProPRO (+$600,900 potential ARR). Persona: markets own all decisions.', touchpoints: [], markets: buildMarkets('Entravision Communications') },
+      { id: uuid(), companyName: 'Gray Television', marketTier: 'Enterprise', arr: 6720, lifecycleStage: 'Steady State', healthScore: 'Green', ...meta('Gray Television'), nextRenewalDate: '2027-12-31', accountStrategy: 'Growth opportunity: remaining stations + AIDA (+$793,280 potential ARR) - only ~3 of many stations contracted today. Persona: markets own all decisions.', touchpoints: [], markets: buildMarkets('Gray Television') },
+      { id: uuid(), companyName: 'Paramount Global', marketTier: 'Enterprise', arr: 0, lifecycleStage: 'Implementation/Onboarding', healthScore: 'Yellow', ...meta('Paramount Global'), nextRenewalDate: 'TBD', accountStrategy: '', touchpoints: [], markets: buildMarkets('Paramount Global') },
+      { id: uuid(), companyName: 'Renda Broadcasting', marketTier: 'SMB', arr: 8945, lifecycleStage: 'Steady State', healthScore: 'Red', ...meta('Renda Broadcasting'), nextRenewalDate: '2026-03-31', accountStrategy: 'Growth opportunity: remaining stations (+$22,555 potential ARR). Persona: corporate wants standardization across markets.', touchpoints: [], markets: buildMarkets('Renda Broadcasting') },
+      { id: uuid(), companyName: 'Capitol Broadcasting Company', marketTier: 'Mid-Market', arr: 15600, lifecycleStage: 'Steady State', healthScore: 'Red', ...meta('Capitol Broadcasting Company'), nextRenewalDate: '2026-12-31', accountStrategy: 'Growth opportunity: remaining radio stations + AIDA (+$14,100 potential ARR). Persona: markets own all decisions.', touchpoints: [], markets: buildMarkets('Capitol Broadcasting Company') }
     ];
   }
 
@@ -299,6 +380,78 @@
     } catch (e) {
       console.error('Failed to save accounts to localStorage', e);
     }
+  }
+
+  // Per-viewer "Today's Agenda" / "Action Items" notes for This Week at a Glance meetings, keyed by
+  // meeting id. Lives only in this browser's localStorage - the sync never reads or writes this object,
+  // exactly like touchpoints and account strategy.
+  const WEEKLY_NOTES_KEY = 'csCrmWeeklyNotes';
+  let weeklyNotes = {};
+
+  function loadWeeklyNotes() {
+    try {
+      const raw = localStorage.getItem(WEEKLY_NOTES_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.error('Failed to load weekly notes from localStorage', e);
+    }
+    return {};
+  }
+
+  function saveWeeklyNotes() {
+    try {
+      localStorage.setItem(WEEKLY_NOTES_KEY, JSON.stringify(weeklyNotes));
+    } catch (e) {
+      console.error('Failed to save weekly notes to localStorage', e);
+    }
+  }
+
+  function updateWeeklyNote(meetingId, field, value) {
+    if (!weeklyNotes[meetingId]) weeklyNotes[meetingId] = { agenda: '', actionItems: '' };
+    weeklyNotes[meetingId][field] = value;
+    saveWeeklyNotes();
+  }
+
+  // ---------- Sync latest data ----------
+  // Merges the four sync-managed structures (MARKET_USAGE_DATA, MARKET_CALL_DATA, ACCOUNT_SYNC_META,
+  // MARKET_TICKETS_DATA) into the accounts already saved in this browser's localStorage. Never touches
+  // touchpoints, accountStrategy, or the manually-typed per-market fields (mostUsedModule,
+  // leastUsedModule, aeUsage, pCodeQuarters, recentEmail, marketTickets) - those are this user's own
+  // notes. WEEKLY_MEETINGS_DATA/WEEKLY_GLANCE_MONDAY are NOT part of this merge - they render directly
+  // from the constants above on every page load instead (see renderGlance()).
+  function syncLatestData() {
+    if (!confirm('Pull the latest synced usage data, call notes, ticket counts, and ticket-market mapping into your accounts?\n\nThis will NOT touch your touchpoints, account strategy, or manually-typed market notes.')) return;
+    accounts.forEach(a => {
+      const meta = ACCOUNT_SYNC_META[a.companyName];
+      if (meta) {
+        a.unresolvedTickets = meta.unresolvedTickets;
+        a.usageDrop = meta.usageDrop;
+      }
+      const usage = MARKET_USAGE_DATA[a.companyName] || [];
+      const callData = MARKET_CALL_DATA[a.companyName] || {};
+      const ticketData = MARKET_TICKETS_DATA[a.companyName] || {};
+      if (!a.markets) a.markets = [];
+      usage.forEach(u => {
+        let m = a.markets.find(x => x.name === u.name);
+        if (!m) {
+          m = { name: u.name, daysActive: 0, dataLoads: 0, mostUsedModule: '', leastUsedModule: '', aeUsage: '', pCodeQuarters: '', recentEmail: '', recentCall: '', relatedTickets: '', marketTickets: '' };
+          a.markets.push(m);
+        }
+        m.daysActive = u.daysActive;
+        m.dataLoads = u.dataLoads;
+        if (m.marketTickets === undefined) m.marketTickets = '';
+        if (callData[u.name] !== undefined) m.recentCall = callData[u.name];
+        if (ticketData[u.name] !== undefined) m.relatedTickets = ticketData[u.name];
+      });
+    });
+    saveAccounts();
+    renderAll();
+    alert('Synced latest usage data, call notes, ticket counts, and ticket-market mapping into your accounts.');
+  }
+
+  function renderLastSyncedLabel() {
+    const el = document.getElementById('lastSyncedLabel');
+    if (el) el.textContent = EXTERNAL_DATA.lastSyncedAt ? `Last synced: ${EXTERNAL_DATA.lastSyncedAt}` : '';
   }
 
   // ---------- Helpers ----------
@@ -333,7 +486,7 @@
         el.classList.add('text-slate-600');
       }
     });
-    const titles = { dashboard: 'Dashboard', accounts: 'Accounts Directory', kanban: 'Lifecycle Board', market: 'Market Summary' };
+    const titles = { dashboard: 'Dashboard', accounts: 'Accounts Directory', kanban: 'Lifecycle Board', market: 'Market Summary', glance: 'This Week at a Glance' };
     document.getElementById('pageTitle').textContent = titles[view];
   }
 
@@ -343,6 +496,8 @@
     renderAccountsTable();
     renderKanban();
     renderMarketSummary();
+    renderGlance();
+    renderLastSyncedLabel();
     if (profileAccountId) renderProfileModalContent(profileAccountId);
   }
 
@@ -631,6 +786,76 @@
     </div>`;
   }
 
+  // ---------- This Week at a Glance ----------
+  function companyAccountId(companyName) {
+    const a = accounts.find(x => x.companyName === companyName);
+    return a ? a.id : null;
+  }
+
+  function renderGlance() {
+    const container = document.getElementById('glanceContent');
+    if (!container) return;
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    const byDay = {};
+    days.forEach(d => byDay[d] = []);
+    (WEEKLY_MEETINGS_DATA || []).forEach(m => { if (byDay[m.day]) byDay[m.day].push(m); });
+    days.forEach(d => byDay[d].sort((a, b) => (a.time || '').localeCompare(b.time || '')));
+
+    const weekLabel = WEEKLY_GLANCE_MONDAY ? `Week of ${WEEKLY_GLANCE_MONDAY}` : 'No week set yet';
+    const totalCount = (WEEKLY_MEETINGS_DATA || []).length;
+
+    container.innerHTML = `
+      <div class="mb-5 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg font-semibold text-slate-900">${escapeHtml(weekLabel)}</h2>
+          <p class="text-xs text-slate-400">${totalCount} real customer meeting${totalCount === 1 ? '' : 's'} this week, pulled from Outlook. Today's Agenda / Action Items save locally in your browser only.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        ${days.map(d => `
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
+            <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+              <h3 class="font-semibold text-slate-800 text-sm">${d}</h3>
+              <span class="text-xs font-medium text-slate-400 bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5">${byDay[d].length}</span>
+            </div>
+            <div class="p-3 space-y-3 overflow-y-auto scrollbar-thin" style="max-height: 75vh;">
+              ${byDay[d].length ? byDay[d].map(m => glanceCard(m)).join('') : `<p class="text-xs text-slate-400 text-center py-6">No customer meetings</p>`}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function glanceCard(m) {
+    const notes = weeklyNotes[m.id] || { agenda: '', actionItems: '' };
+    const accId = companyAccountId(m.company);
+    return `<div class="bg-slate-50 rounded-lg border border-slate-200 p-3">
+      <div class="flex items-start justify-between gap-2 mb-1">
+        <div>
+          ${accId
+            ? `<button onclick="openProfileModal('${accId}')" class="font-medium text-sm text-indigo-600 hover:underline text-left">${escapeHtml(m.company)}</button>`
+            : `<span class="font-medium text-sm text-slate-800">${escapeHtml(m.company)}</span>`}
+          <p class="text-xs text-slate-500">${escapeHtml(m.label || '')}</p>
+        </div>
+        <span class="text-xs font-medium text-slate-400 whitespace-nowrap">${escapeHtml(m.time || '')}</span>
+      </div>
+      <p class="text-xs text-slate-500 mb-2">${escapeHtml(m.attendees || '')}</p>
+      <div class="bg-white rounded p-2 mb-2 border border-slate-100">
+        <p class="text-xs font-semibold text-slate-500 uppercase mb-1">Last Call Notes</p>
+        <p class="text-xs text-slate-700">${m.lastCallNotes ? escapeHtml(m.lastCallNotes) : '<span class="text-slate-400">None logged.</span>'}</p>
+      </div>
+      <div class="mb-2">
+        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Today's Agenda</label>
+        <textarea rows="2" onchange="updateWeeklyNote('${m.id}', 'agenda', this.value)" class="w-full border border-slate-200 rounded px-2 py-1 text-xs resize-none" placeholder="What do we want to cover?">${escapeHtml(notes.agenda || '')}</textarea>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Action Items</label>
+        <textarea rows="2" onchange="updateWeeklyNote('${m.id}', 'actionItems', this.value)" class="w-full border border-slate-200 rounded px-2 py-1 text-xs resize-none" placeholder="Follow-ups after the call">${escapeHtml(notes.actionItems || '')}</textarea>
+      </div>
+    </div>`;
+  }
+
   // ---------- Markets Drill-Down Modal ----------
   function openMarketsModal(id) {
     marketsModalAccountId = id;
@@ -664,8 +889,10 @@
         <td class="py-2 px-3"><input value="${escapeHtml(m.pCodeQuarters)}" placeholder="e.g. Q2-Q4 2026" onchange="updateMarketField('${a.id}', ${realIdx}, 'pCodeQuarters', this.value)" class="w-28 border border-slate-200 rounded px-2 py-1 text-xs"></td>
         <td class="py-2 px-3"><input value="${escapeHtml(m.recentEmail)}" placeholder="Notes + date" onchange="updateMarketField('${a.id}', ${realIdx}, 'recentEmail', this.value)" class="w-56 border border-slate-200 rounded px-2 py-1 text-xs"></td>
         <td class="py-2 px-3"><input value="${escapeHtml(m.recentCall)}" placeholder="Notes + date" onchange="updateMarketField('${a.id}', ${realIdx}, 'recentCall', this.value)" class="w-56 border border-slate-200 rounded px-2 py-1 text-xs"></td>
+        <td class="py-2 px-3 text-slate-600 w-56">${m.relatedTickets ? escapeHtml(m.relatedTickets) : '<span class="text-slate-400">None synced.</span>'}</td>
+        <td class="py-2 px-3"><input value="${escapeHtml(m.marketTickets || '')}" placeholder="Your own ticket notes" onchange="updateMarketField('${a.id}', ${realIdx}, 'marketTickets', this.value)" class="w-48 border border-slate-200 rounded px-2 py-1 text-xs"></td>
       </tr>`;
-    }).join('') : `<tr><td colspan="9" class="py-8 text-center text-slate-400">No markets match your search.</td></tr>`;
+    }).join('') : `<tr><td colspan="11" class="py-8 text-center text-slate-400">No markets match your search.</td></tr>`;
 
     document.getElementById('modalRoot').innerHTML = `
     <div class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4" onclick="if(event.target===this) closeModal()">
@@ -673,7 +900,7 @@
         <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
           <div>
             <h2 class="text-lg font-semibold text-slate-900">${escapeHtml(a.companyName)} &mdash; Markets</h2>
-            <p class="text-xs text-slate-400">${a.markets.length} market${a.markets.length === 1 ? '' : 's'} &middot; Days Active / Data Loads are real Jan-Sep usage totals. The remaining columns are manual notes fields &mdash; type into any cell and it saves automatically.</p>
+            <p class="text-xs text-slate-400">${a.markets.length} market${a.markets.length === 1 ? '' : 's'} &middot; Days Active / Data Loads and Related Tickets are synced automatically (via "Sync latest data"). The other columns are your own manual notes &mdash; type into any cell and it saves automatically.</p>
           </div>
           <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
         </div>
@@ -692,6 +919,8 @@
                   <th class="py-2 px-3">P-Codes Set (Qtrs)</th>
                   <th class="py-2 px-3">Recent Email</th>
                   <th class="py-2 px-3">Recent Call</th>
+                  <th class="py-2 px-3">Related Tickets (synced)</th>
+                  <th class="py-2 px-3">Ticket Notes (yours)</th>
                 </tr>
               </thead>
               <tbody>${rows}</tbody>
@@ -978,6 +1207,7 @@
 
   // ---------- Init ----------
   accounts = loadAccounts();
+  weeklyNotes = loadWeeklyNotes();
   renderAll();
   showView('dashboard');
   updateFilterButtons();
