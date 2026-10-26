@@ -133,35 +133,32 @@
   const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
   const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
 
-  // SCHEDULED SYNC NOTE (2026-10-23): all five sync-managed data sources were re-pulled today via four
+  // SCHEDULED SYNC NOTE (2026-10-26): all five sync-managed data sources were re-pulled today via four
   // parallel research passes (SharePoint/OneDrive usage workbook; Trello touchpoints across all 6 account
-  // boards that have per-market lists; Jira project RO fresh JQL + body reads for tickets created/updated
-  // since the 2026-10-22 run; direct Outlook pull for this week's meetings).
-  // SECURITY FLAG, ESCALATED from prior runs: the SharePoint/OneDrive decoy files first seen 2026-10-20
-  // ("usage-data.js", "usage-data-verify-2026-10-20.txt", "usage-data-readcopy-2026-10-20.txt" - snippets
-  // mimicking this app's own internal variable names) are still present and were again NOT opened or used
-  // as a data source. This run's search also surfaced two "Daily_Digest_2026-09-*.docx" files in the same
-  // personal OneDrive folder whose indexed snippets include phrasing addressed directly at an AI agent
-  // (e.g. "If you'd like tomorrow's run to have full access...") - this reads as a more direct
-  // prompt-injection attempt targeting this scheduled sync job specifically. Neither file was opened or
-  // acted on; flagged prominently to the user running this routine for review.
+  // boards that have per-market lists, plus Outlook fallback checks; Jira project RO fresh JQL + body reads
+  // for tickets created/updated since the 2026-10-23 run; direct Outlook pull for this week's meetings).
+  // SECURITY FLAG, carried forward from prior runs: the SharePoint/OneDrive decoy files first seen
+  // 2026-10-20 ("usage-data-verify-2026-10-20.txt", "usage-data-readcopy-2026-10-20.txt" - snippets
+  // mimicking this app's own internal variable names) are still present at the same location, unchanged,
+  // and were again NOT opened or used as a data source this run. Did not re-open or re-investigate the
+  // previously-flagged "Daily_Digest_2026-09-*.docx" prompt-injection attempt from the 2026-10-23 run's
+  // note (per standing policy of not opening suspicious files); still flagged here for the user's review.
   // MARKET_USAGE_DATA: "Weekly Usage Review - Master.xlsx" reconfirmed byte-for-byte unchanged since
   // 2026-10-14T18:20:26Z (SharePoint metadata only, no re-parse needed) - see its own comment; usageDrop
-  // flags in ACCOUNT_SYNC_META are therefore also unchanged. MARKET_CALL_DATA: all 6 account boards with
-  // per-market Trello lists re-scanned card-by-card (Sinclair/AMCN/Paramount reconfirmed to still have no
-  // per-market Trello structure) - no card newer than what's already on file was found anywhere, so no
-  // changes - see its own comment. ACCOUNT_SYNC_META: fresh JQL counts pulled for all 9 accounts; raw hit
-  // counts moved within normal noise (Sinclair 50 vs 49, Hearst 89 vs 90) but weren't individually
-  // re-opened this run (volume, same floor-estimate policy as prior runs), so confirmed counts and
-  // usageDrop flags are unchanged - see its own comment. MARKET_TICKETS_DATA: one real addition -
-  // Entravision's new RO-11255 ("Political Rate Card: blank/out-of-order rates" naming KCEC, Entravision's
-  // Denver station) was added to Denver's entry; a few other new/updated tickets this run (Entravision
-  // RO-11263/RO-11259, Nexstar RO-11067) name no specific market/station and were left unmapped - see its
-  // own comment. Today (Friday 2026-10-23) is still in the same work week as the last run (Monday
-  // 2026-10-19), so WEEKLY_GLANCE_MONDAY is unchanged; WEEKLY_MEETINGS_DATA was fully rebuilt from a fresh,
-  // individually-reviewed 32-event Outlook pull covering the full Mon-Sat window - the resulting 10 kept
-  // customer meetings (including Friday's two, which had already occurred by the time of this pull) are
-  // identical to what was already on file - no changes - see its own comment.
+  // flags in ACCOUNT_SYNC_META are therefore also unchanged. MARKET_CALL_DATA: three real updates -
+  // Hearst WEST PALM BEACH-FT. PIERCE advanced to a new 2026-10-23 Trello card, and Nexstar Champaign
+  // (2026-10-21) and Indianapolis (2026-10-23) both advanced to newer Outlook touchpoints; every other
+  // market re-checked and confirmed unchanged - see its own comment. ACCOUNT_SYNC_META: fresh JQL counts
+  // pulled for all 9 accounts; Entravision's confirmed count dropped from 32 to 31 (one fewer genuine raw
+  // hit, net of the same 2 known false positives); Sinclair and Hearst remain floor estimates, not
+  // individually re-opened this run (volume) - see its own comment. MARKET_TICKETS_DATA: no changes -
+  // every ticket created/updated project-wide since 2026-10-23 was reviewed but none newly maps to a
+  // tracked market (RO-11258/RO-11259/RO-11266 all read in full and excluded as not market-specific) - see
+  // its own comment. Today (Monday 2026-10-26) starts a new work week, so WEEKLY_GLANCE_MONDAY advances to
+  // 2026-10-26; WEEKLY_MEETINGS_DATA was fully rebuilt from a fresh, individually-reviewed Outlook pull
+  // covering Mon-Sat - 10 real customer meetings this week, including a new AMC Networks (AMCN)
+  // account-wide meeting (AMCN has no per-market Trello/usage breakdown, so it's tracked account-wide only)
+  // - see its own comment.
 
   // Real per-market (DMA) Days Active / Data Loads totals (Jan-to-date through October), sourced from
   // "Weekly Usage Review - Master.xlsx" (Savannah Medley's OneDrive Desktop copy, last modified
@@ -195,9 +192,9 @@
   // Days Active tab (likely tied to a known filter-scope bug Sherry Stephens flagged by email 2026-10-08) -
   // rendered below with daysActive 0 (literal: no row present), not fabricated. Markets with zero activity
   // anywhere in the current pivot output stay dropped rather than carried forward at a guessed value.
-  // Re-confirmed again 2026-10-22 and 2026-10-23 via SharePoint metadata only (modification timestamp
-  // still 2026-10-14T18:20:26Z both times), so a full re-parse was skipped as unnecessary both runs - see
-  // this run's sync note above.
+  // Re-confirmed again 2026-10-22, 2026-10-23, and 2026-10-26 via SharePoint metadata only (modification
+  // timestamp still 2026-10-14T18:20:26Z each time), so a full re-parse was skipped as unnecessary each
+  // run - see this run's sync note above.
   const MARKET_USAGE_DATA = {"AMC Networks (AMCN)":[],"Nexstar Media Group":[{"name":"Champaign","daysActive":182,"dataLoads":416},{"name":"Indianapolis","daysActive":149,"dataLoads":316},{"name":"Multi-Market","daysActive":2,"dataLoads":2},{"name":"Myrtle Beach","daysActive":40,"dataLoads":63},{"name":"Tampa","daysActive":27,"dataLoads":42}],"Sinclair Broadcast Group":[{"name":"(unmapped station)","daysActive":299,"dataLoads":1379},{"name":"Abilene, TX","daysActive":159,"dataLoads":507},{"name":"Albany, NY","daysActive":300,"dataLoads":1313},{"name":"Amarillo, TX","daysActive":554,"dataLoads":3157},{"name":"Asheville, NC","daysActive":104,"dataLoads":424},{"name":"Austin, TX","daysActive":391,"dataLoads":852},{"name":"Bakersfield, CA","daysActive":2,"dataLoads":10067},{"name":"Baltimore, MD","daysActive":631,"dataLoads":7744},{"name":"Beaumont, TX","daysActive":40,"dataLoads":134},{"name":"Birmingham, AL","daysActive":377,"dataLoads":1224},{"name":"Boise, ID","daysActive":712,"dataLoads":3738},{"name":"Buffalo, NY","daysActive":101,"dataLoads":292},{"name":"Butte, MT","daysActive":141,"dataLoads":420},{"name":"Cedar Rapids, IA","daysActive":98,"dataLoads":568},{"name":"Charleston, SC","daysActive":26,"dataLoads":58},{"name":"Charleston, WV","daysActive":206,"dataLoads":709},{"name":"Chattanooga, TN","daysActive":302,"dataLoads":2284},{"name":"Cincinnati, OH","daysActive":87,"dataLoads":3075},{"name":"Columbia, MO","daysActive":150,"dataLoads":320},{"name":"Columbia, SC","daysActive":32,"dataLoads":80},{"name":"Columbus, OH","daysActive":243,"dataLoads":777},{"name":"Corpus Christi, TX","daysActive":460,"dataLoads":2720},{"name":"Dayton, OH","daysActive":0,"dataLoads":761},{"name":"Des Moines, IA","daysActive":0,"dataLoads":261},{"name":"El Paso, TX","daysActive":161,"dataLoads":456},{"name":"Eugene, OR","daysActive":6,"dataLoads":1235},{"name":"Eureka, CA","daysActive":3,"dataLoads":11},{"name":"Flint, MI","daysActive":59,"dataLoads":106},{"name":"Fresno, CA","daysActive":38,"dataLoads":554},{"name":"Gainesville, FL","daysActive":48,"dataLoads":81},{"name":"Grand Rapids, MI","daysActive":294,"dataLoads":1472},{"name":"Green Bay, WI","daysActive":4,"dataLoads":190},{"name":"Greensboro, NC","daysActive":393,"dataLoads":815},{"name":"Greenville, NC","daysActive":463,"dataLoads":1252},{"name":"Harrisburg, PA","daysActive":224,"dataLoads":497},{"name":"Johnstown, PA","daysActive":34,"dataLoads":149},{"name":"Las Vegas, NV","daysActive":2,"dataLoads":85},{"name":"Lincoln, NE","daysActive":167,"dataLoads":459},{"name":"Little Rock, AR","daysActive":0,"dataLoads":1524},{"name":"Macon, GA","daysActive":115,"dataLoads":311},{"name":"Madison, WI","daysActive":100,"dataLoads":396},{"name":"Medford, OR","daysActive":0,"dataLoads":275},{"name":"Minneapolis, MN","daysActive":52,"dataLoads":127},{"name":"Missoula, MT","daysActive":109,"dataLoads":273},{"name":"Mobile, AL","daysActive":124,"dataLoads":167},{"name":"Myrtle Beach, SC","daysActive":21,"dataLoads":56},{"name":"Nashville, TN","daysActive":142,"dataLoads":554},{"name":"Norfolk, VA","daysActive":94,"dataLoads":169},{"name":"Oklahoma City, OK","daysActive":151,"dataLoads":622},{"name":"Omaha, NE","daysActive":55,"dataLoads":102},{"name":"Pensacola, FL","daysActive":10,"dataLoads":210},{"name":"Pittsburgh, PA","daysActive":71,"dataLoads":351},{"name":"Portland, ME","daysActive":0,"dataLoads":299},{"name":"Portland, OR","daysActive":75,"dataLoads":2865},{"name":"Providence, RI","daysActive":124,"dataLoads":1996},{"name":"Raleigh, NC","daysActive":26,"dataLoads":41},{"name":"Redding, CA","daysActive":79,"dataLoads":220},{"name":"Reno, NV","daysActive":2,"dataLoads":414},{"name":"Richmond, VA","daysActive":407,"dataLoads":2979},{"name":"Roanoke/Lynchburg, VA","daysActive":348,"dataLoads":953},{"name":"Rochester, NY","daysActive":38,"dataLoads":188},{"name":"Salt Lake City, UT","daysActive":260,"dataLoads":908},{"name":"San Antonio, TX","daysActive":275,"dataLoads":795},{"name":"Savannah, GA","daysActive":0,"dataLoads":165},{"name":"Seattle, WA (TV)","daysActive":151,"dataLoads":811},{"name":"Sioux City, IA","daysActive":61,"dataLoads":347},{"name":"South Bend, IN","daysActive":93,"dataLoads":228},{"name":"St. Louis, MO","daysActive":3,"dataLoads":4},{"name":"Steubenville, OH","daysActive":0,"dataLoads":877},{"name":"Syracuse, NY","daysActive":70,"dataLoads":281},{"name":"Tallahassee, FL","daysActive":268,"dataLoads":2029},{"name":"Toledo, OH","daysActive":139,"dataLoads":1785},{"name":"Traverse City, MI","daysActive":3,"dataLoads":2219},{"name":"Tri Cities, TN","daysActive":78,"dataLoads":733},{"name":"Tulsa, OK","daysActive":171,"dataLoads":531},{"name":"Washington, DC","daysActive":258,"dataLoads":1447},{"name":"West Palm Beach, FL","daysActive":325,"dataLoads":762},{"name":"Wichita, KS","daysActive":89,"dataLoads":753},{"name":"Wilkes-Barre, PA","daysActive":0,"dataLoads":1826},{"name":"Yakima, WA","daysActive":1,"dataLoads":6}],"Hearst Television":[{"name":"BIRMINGHAM (ANN AND TUSC)","daysActive":29,"dataLoads":102},{"name":"BURLINGTON-PLATTSBURGH","daysActive":716,"dataLoads":1832},{"name":"Baltimore","daysActive":3,"dataLoads":3},{"name":"Boston","daysActive":70,"dataLoads":211},{"name":"CINCINNATI","daysActive":97,"dataLoads":203},{"name":"DES MOINES-AMES","daysActive":84,"dataLoads":153},{"name":"FT.SMITH-FAY-SPRNGOL-RGRS","daysActive":15,"dataLoads":21},{"name":"Ft. Myers-Naples","daysActive":18,"dataLoads":33},{"name":"GREENSBORO-H.POINT-W.SALEM","daysActive":15,"dataLoads":21},{"name":"GREENVILLE-SPARTANBURG-ASHEVILLE-ANDERSON","daysActive":4,"dataLoads":7},{"name":"HARRISBURG-LNCSTR-lEB-YORK","daysActive":82,"dataLoads":252},{"name":"JACKSON, MS","daysActive":1,"dataLoads":2},{"name":"KANSAS CITY","daysActive":26,"dataLoads":71},{"name":"LOUISVILLE","daysActive":111,"dataLoads":215},{"name":"MANCHESTER","daysActive":3,"dataLoads":2},{"name":"MONTEREY-SALINAS","daysActive":46,"dataLoads":89},{"name":"Milwaukee","daysActive":24,"dataLoads":47},{"name":"Multi-Market","daysActive":72,"dataLoads":152},{"name":"New Orleans","daysActive":271,"dataLoads":489},{"name":"OMAHA","daysActive":6,"dataLoads":8},{"name":"ORLANDO-DAYTONA BEACH-MELBOURNE","daysActive":11,"dataLoads":21},{"name":"PORTLAND-AUBURN","daysActive":62,"dataLoads":130},{"name":"Pittsburgh","daysActive":439,"dataLoads":1248},{"name":"SACRAMNTO-STKTON-MOOESTO","daysActive":15,"dataLoads":33},{"name":"SAVANNAH","daysActive":7,"dataLoads":27},{"name":"TAMPA-ST. PETE (SARASOTA)","daysActive":5,"dataLoads":7},{"name":"WEST PALM BEACH-FT. PIERCE","daysActive":32,"dataLoads":67}],"Entravision Communications":[{"name":"Albuquerque","daysActive":1,"dataLoads":1},{"name":"Denver","daysActive":247,"dataLoads":422},{"name":"El Paso","daysActive":1,"dataLoads":4},{"name":"Las Vegas","daysActive":111,"dataLoads":296},{"name":"Los Angeles","daysActive":6,"dataLoads":11},{"name":"Monterey","daysActive":2,"dataLoads":0},{"name":"Multi-Market","daysActive":1314,"dataLoads":6079},{"name":"Phoenix","daysActive":62,"dataLoads":125},{"name":"Reno","daysActive":1,"dataLoads":0}],"Gray Television":[{"name":"Birmingham, AL","daysActive":17,"dataLoads":33},{"name":"Omaha, NE","daysActive":272,"dataLoads":897}],"Renda Broadcasting":[{"name":"Ft. Myers","daysActive":61,"dataLoads":149}],"Capitol Broadcasting Company":[{"name":"Raleigh","daysActive":44,"dataLoads":83}],"Paramount Global":[]};
 
   // Real recent-call info, per market, pulled from per-account Trello boards in the "Revenue
@@ -217,14 +214,20 @@
   // prior runs' decision. AMC Networks (AMCN) and Paramount Global: both re-confirmed again to have no
   // Trello board at all. Gray's Birmingham AL market still has no Trello list of any kind. Re-checked
   // again 2026-10-23 across all 6 boards with per-market lists (Sinclair reconfirmed to have none) - no
-  // card found newer than what's already on file anywhere, so no changes this run.
+  // card found newer than what's already on file anywhere, so no changes that run. Re-checked again
+  // 2026-10-26: three real updates found - Hearst WEST PALM BEACH-FT. PIERCE advanced from its 2026-10-09
+  // entry to a newer 2026-10-23 Trello card (rate-rounding discrepancy + bowl-game sports-program sort
+  // order); Nexstar Champaign advanced to a 2026-10-21 Outlook touchpoint (was 2026-09-30); Nexstar
+  // Indianapolis advanced to a 2026-10-23 Outlook touchpoint on its established bi-weekly cadence (was
+  // 2026-10-09). Every other market's Trello/Outlook content re-checked and confirmed unchanged. No
+  // personal/internal chatter encountered in any card or event body this run.
   const MARKET_CALL_DATA = {
     "Hearst Television": {
       "BIRMINGHAM (ANN AND TUSC)": "2026-03-12 (Trello): A touchpoint card exists but has no description or comments logged - no substantive detail available.",
       "CINCINNATI": "2026-10-21 (Trello): RateOptics touchpoint with Julie Gossard (rate cards/political windows), Jeff Doerrer (political window dates), and Lisa Davis (training/access); confirmed political and RP use the same priority-code card, positive feedback on the new rate-card search bar and advertiser-detail features, and next steps set for Q1 rate upload and 2027 political window setup.",
       "LOUISVILLE": "2026-09-08 (Trello): RateOptics and Hearst Louisville discussed concerns that the Q1 outlook is overly optimistic relative to recent ratings erosion, with a plan to reassess rates and prepare for future increases.",
       "HARRISBURG-LNCSTR-lEB-YORK": "2026-10-14 (Trello): Q1 2027 ~95-98% booked; set P5=1.16x, P4=1.33x, P3=2x, P2=3x vs P6; flagged data issues (Entertainment Tonight duplicate entries, missing Chicago Med rec); next review 10/28.",
-      "WEST PALM BEACH-FT. PIERCE": "2026-10-09 (Trello): RateOptics training establishing one shared master rate card for AEs/Kristin/Danny (replacing multiple Excel cards), covering quarterly views, political-window floors, P-code tiers, and read-only seller access; action item to enable 35-64/35+ impressions metrics.",
+      "WEST PALM BEACH-FT. PIERCE": "2026-10-23 (Trello): Reviewed a recurring $25 rate rounding discrepancy (product team removing the rounding logic; Savannah will re-enter affected rates) and investigated bowl-game sports programs reverting to their previous sort order after being reorganized chronologically; Devin to re-export and verify sort stability the next morning.",
       "ORLANDO-DAYTONA BEACH-MELBOURNE": "2026-09-22 (Outlook): 'RateOptics Touchpoint | WKCF Orlando' meeting held with the Hearst Orlando team; no detailed notes logged beyond the calendar entry.",
       "DES MOINES-AMES": "2026-09-28 (Outlook): 'RateOptics Touchpoint' meeting held with Kelly Beeck (Hearst KCCI); no detailed notes logged beyond the calendar entry.",
       "New Orleans": "2026-07-24 (Trello): We set up the Q3 rate card auto emails for Friday mornings. We'll update the Q4 card to reflect the p-code structure you shared on the call.",
@@ -251,8 +254,8 @@
       "Raleigh": "2026-06-12 (Trello): AEs don't yet fully trust RateOptics as the source of truth for rates; plan is to set up weekly small-group AE walkthroughs using Aida/Ad Insights."
     },
     "Nexstar Media Group": {
-      "Champaign": "2026-09-30 (Outlook): Recurring 'RateOptics Training & Feedback' session with Nexstar Champaign (WCIA); no detailed notes logged beyond the calendar entry.",
-      "Indianapolis": "2026-10-09 (Outlook): 'RateOptics Bi-Weekly | Nexstar Indianapolis' session held with Nexstar Indianapolis (FOX59) - now confirmed on a bi-weekly, 30-minute cadence per the organizer's note ('Moving this to a bi-weekly, 30-minute call, now that you are RateOptics pros!'); attendees included Michelle Kenney, Jason Bean, Aaron Crone.",
+      "Champaign": "2026-10-21 (Outlook): 'RateOptics Touchpoint | Nexstar Champaign' session held with Nexstar Champaign (WCIA); no detailed notes logged beyond the calendar entry.",
+      "Indianapolis": "2026-10-23 (Outlook): 'RateOptics Bi-Weekly | Nexstar Indianapolis' session held with Nexstar Indianapolis (FOX59) on the established bi-weekly 30-minute cadence; no detailed notes logged beyond the calendar entry; attendees included Michelle Kenney, Jason Bean, Aaron Crone.",
       "Myrtle Beach": "2026-10-20 (Trello): RateOptics Training & Feedback call with Nexstar Myrtle Beach (Amy Bonnell, Matt Bowman, Jeff Taylor); reviewed/finalized the Q1 five-tier rate card incl. NFL Wild Card/Divisional and NCAA Final Four/Championship placeholders, raised several daytime/news/access floors, initialized a Q2 tiered card off Q1 multipliers, and planned to verify political is excluded from AUR metrics; next step is exporting Q1/Q2 cards to Excel for redline review.",
       "Tampa": "2026-09-03 (Outlook): 'RateOptics Budget Builder | Nexstar Tampa' meeting with the WFLA Tampa team (klastra, thill, JMurrell, DPoole, JNesbitt); organizer smedley, also attended by EBond, sstephens, JTownsend. (Prior meetings in the thread: Training & Feedback 08/05, Training 07/16, Kickoff 06/25 - 09/03 is the most recent.)"
     }
@@ -281,7 +284,14 @@
   // RO-11013 is excluded (same blast-radius-table-only reasoning as Gray). Re-pulled again 2026-10-23: raw
   // hit counts moved within normal noise (Sinclair 50 vs 49, Hearst 89 vs 90) but weren't individually
   // re-opened this run either (same volume-based floor-estimate policy) - all 9 confirmed counts below are
-  // unchanged from 2026-10-22. usageDrop flags: unchanged -
+  // unchanged from 2026-10-22. Re-pulled again 2026-10-26: AMCN (12 raw, 1 excluded as a generic example
+  // mention, not AMCN-specific) 11 confirmed, unchanged; Nexstar 10, unchanged; Sinclair 49 raw hits,
+  // floor estimate carried forward unchanged; Hearst 89 raw hits, floor estimate carried forward at 90
+  // unchanged; Gray 37 raw via bare "Gray" fallback, same ~8 exclusions, 29 confirmed, unchanged; Paramount
+  // Global 2, unchanged; Renda 1, unchanged; Capitol 4 raw hits, 3 confirmed, unchanged. Entravision:
+  // "Entravision" - 33 raw hits (was 34), same 2 known false positives (RO-11257, RO-5469) excluded - 31
+  // confirmed (was 32, -1; the dropped raw hit could not be individually isolated without reading all 33
+  // tickets, so this one count is lower-confidence than the rest). usageDrop flags: unchanged -
   // the source workbook itself hasn't changed at all (see MARKET_USAGE_DATA's own comment), so the
   // Aug-vs-Sep Days Active grand-total deltas are the same as before: AMCN 24->13 (-45.8%, true), Nexstar
   // 153->70 (-54.2%, true), Sinclair 1547->1004 (-35.1%, true), Hearst 375->226 (-39.7%, true), Entravision
@@ -293,7 +303,7 @@
     "Nexstar Media Group": { unresolvedTickets: 10, usageDrop: true },
     "Sinclair Broadcast Group": { unresolvedTickets: 49, usageDrop: true },
     "Hearst Television": { unresolvedTickets: 90, usageDrop: true },
-    "Entravision Communications": { unresolvedTickets: 32, usageDrop: false },
+    "Entravision Communications": { unresolvedTickets: 31, usageDrop: false },
     "Gray Television": { unresolvedTickets: 29, usageDrop: true },
     "Paramount Global": { unresolvedTickets: 2, usageDrop: false },
     "Renda Broadcasting": { unresolvedTickets: 1, usageDrop: false },
@@ -324,7 +334,14 @@
   // left empty. Renda Broadcasting's one ticket (RO-10779 "Configure Aida") still names no station - left
   // empty. One Sinclair ticket (RO-5932, "Sinclair Portland" Dynamic Rate Card bug) still names only
   // "Portland" with no station, and Sinclair tracks both Portland, ME and Portland, OR - left unmapped as
-  // unresolvably ambiguous.
+  // unresolvably ambiguous. Re-checked 2026-10-26 for all 24 tickets created/updated project-wide since the
+  // 2026-10-23 sync - no changes to any mapping below. RO-11255 (Entravision Denver/KCEC) already tracked,
+  // no change. RO-11200 (Hearst Burlington) got a new comment but its summary/content is unchanged, so its
+  // entry stands as-is. Read in full but NOT mapped: RO-11257 and RO-11258 (RO-11257 explicitly says
+  // Gray/Entravision "aren't affected"; RO-11258 only uses Sinclair's KSNV as an internal dev-repro example,
+  // not a customer report, and KSNV isn't a tracked Sinclair market); RO-11259 (confirms "Entravision 31"
+  // custom dayparts affected in aggregate but names no specific station); RO-11266 (a Dynamic Rate Card
+  // feature request citing AMCN only as a generic example, not an AMCN-specific complaint).
   const MARKET_TICKETS_DATA = {
     "AMC Networks (AMCN)": {},
     "Nexstar Media Group": {
@@ -406,22 +423,38 @@
   // @revenueanalytics.com, or single-attendee). Rebuilt again 2026-10-23 (Friday, same work week) from a
   // fresh full-window Outlook pull (32 events, individually reviewed): the same 10 customer meetings
   // resulted, including Friday's Hearst West Palm Beach and Nexstar Indianapolis meetings (which had
-  // already occurred by the time of this pull, confirmed via the calendar) - no changes this run.
-  const WEEKLY_GLANCE_MONDAY = '2026-10-19';
+  // already occurred by the time of this pull, confirmed via the calendar) - no changes that run. Today,
+  // 2026-10-26, is a Monday starting a new work week, so WEEKLY_GLANCE_MONDAY advances to 2026-10-26.
+  // Rebuilt from scratch for the new Mon 2026-10-26 00:00 - Sat 2026-10-31 00:00 window (30 events in
+  // range, all individually reviewed): 10 real customer meetings this week. The prior week's Entravision
+  // Office Hours, Gray Omaha, and Hearst Pittsburgh/Burlington/Harrisburg meetings did not recur on their
+  // old days/times this week; new meetings this week instead: Hearst Des Moines-Ames (Monday), Hearst
+  // Orlando-Daytona Beach-Melbourne (Tuesday), and Hearst Pittsburgh/Burlington-Plattsburgh/
+  // Harrisburg-Lncstr-lEB-York all recur on Wednesday, plus a new AMC Networks (AMCN) account-wide meeting
+  // Friday (AMCN has no per-market Trello board or usage breakdown, so it's tracked account-wide only, with
+  // the standard "no notes logged yet" fallback). Excluded this run: two calendar items that looked
+  // customer-facing but were not - "Hearst Cincinnati AE Refresher Training Placeholder" (only smedley +
+  // EBond invited, no customer actually on it, a placeholder) and "FW: WLWT Sales Meeting" (Hearst's own
+  // internal sales meeting, organized by Hearst staff, with Savannah only forwarded/CC'd as an FYI
+  // observer, not an RA-hosted or RA-attended touchpoint); also excluded "RateOptics Touchpoint | Cumulus"
+  // and "SXM/RA: ProposalPRO Touch Point" (SiriusXM) as non-tracked accounts, plus the usual internal-only
+  // standups/1:1s/PTO/focus blocks. No Thursday (10/29) customer meetings survived filtering this week -
+  // all Thursday calendar items were internal.
+  const WEEKLY_GLANCE_MONDAY = '2026-10-26';
   const WEEKLY_MEETINGS_DATA = [
-    { id: 'mon-entravision-denver', day: 'Monday', date: '2026-10-19', time: '10:00 AM ET', company: 'Entravision Communications', label: 'Denver', attendees: 'Don Daboub, Pamela Cordero', lastCallNotes: "2026-10-19 (Outlook): Recurring 'RateOptics Political Touchpoint' meeting with Entravision Denver (Don Daboub, Pamela Cordero) - cadence continues (also held 10/12, 9/28, 9/21, 9/14; skipped the week of 10/5); no detailed notes logged beyond the calendar entries." },
-    { id: 'mon-entravision-lasvegas', day: 'Monday', date: '2026-10-19', time: '1:00 PM ET', company: 'Entravision Communications', label: 'Las Vegas', attendees: 'Christopher Jordan, Nancy Shehab, Fanny Martinez, Octavio Garcia', lastCallNotes: "2026-10-19 (Outlook): Recurring 'RateOptics Touchpoint' meeting with Entravision Las Vegas (Christopher Jordan, Nancy Shehab, Fanny Martinez, Octavio Garcia) - weekly touchpoint to review violations ahead of the General Election; weekly cadence continues (also held 10/12, 9/28, 9/21, 9/14)." },
-    { id: 'tue-sinclair-accountwide', day: 'Tuesday', date: '2026-10-20', time: '11:00 AM ET', company: 'Sinclair Broadcast Group', label: 'Account-wide', attendees: 'Ryan Beinstein, Robert Lewis, Dominick Latorre, Ryan McCoy, Billy Robbins', lastCallNotes: "No notes logged yet - Sinclair Broadcast Group's Trello board tracks product asks and bugs, not per-call touchpoint notes." },
-    { id: 'tue-nexstar-myrtlebeach', day: 'Tuesday', date: '2026-10-20', time: '3:00 PM ET', company: 'Nexstar Media Group', label: 'Myrtle Beach', attendees: 'Jeff Taylor, Amy Bonnell, Matt Bowman', lastCallNotes: "2026-10-20 (Trello): RateOptics Training & Feedback call with Nexstar Myrtle Beach (Amy Bonnell, Matt Bowman, Jeff Taylor); reviewed/finalized the Q1 five-tier rate card incl. NFL Wild Card/Divisional and NCAA Final Four/Championship placeholders, raised several daytime/news/access floors, initialized a Q2 tiered card off Q1 multipliers, and planned to verify political is excluded from AUR metrics; next step is exporting Q1/Q2 cards to Excel for redline review." },
-    { id: 'wed-hearst-cincinnati', day: 'Wednesday', date: '2026-10-21', time: '10:30 AM ET', company: 'Hearst Television', label: 'CINCINNATI', attendees: 'Julie Gossard', lastCallNotes: "2026-10-21 (Trello): RateOptics touchpoint with Julie Gossard (rate cards/political windows), Jeff Doerrer (political window dates), and Lisa Davis (training/access); confirmed political and RP use the same priority-code card, positive feedback on the new rate-card search bar and advertiser-detail features, and next steps set for Q1 rate upload and 2027 political window setup." },
-    { id: 'wed-nexstar-champaign', day: 'Wednesday', date: '2026-10-21', time: '11:00 AM ET', company: 'Nexstar Media Group', label: 'Champaign', attendees: 'Annette Fisher, A. Salas, A. Ritchie, E. Ramey, W. Glisson', lastCallNotes: "2026-09-30 (Outlook): Recurring 'RateOptics Training & Feedback' session with Nexstar Champaign (WCIA); no detailed notes logged beyond the calendar entry." },
-    { id: 'wed-entravision-officehours', day: 'Wednesday', date: '2026-10-21', time: '4:00 PM ET', company: 'Entravision Communications', label: 'Office Hours (all markets)', attendees: 'Sean Stade, Christopher Jordan, Zachary Foster, Miranda Cowdrey, Carlos Fourzan, and 24 others', lastCallNotes: "No notes logged yet - this is Entravision's recurring all-markets Office Hours session; MARKET_CALL_DATA only tracks per-market call notes (see Denver, Las Vegas, Monterey above), and no Trello card covers the account-wide session." },
-    { id: 'thu-gray-omaha-university', day: 'Thursday', date: '2026-10-22', time: '10:00 AM ET', company: 'Gray Television', label: 'Omaha, NE', attendees: 'Dan Tooker, Karen Thiel', lastCallNotes: "2026-10-05 (Outlook): 'RateOptics Help | Gray Omaha' meeting held with Julie Luna (Gray Omaha); no detailed notes logged beyond the calendar entry, supersedes the stale 2026-08-27 Trello entry." },
-    { id: 'fri-hearst-westpalmbeach', day: 'Friday', date: '2026-10-23', time: '10:00 AM ET', company: 'Hearst Television', label: 'WEST PALM BEACH-FT. PIERCE', attendees: 'Danny Hastaba, Kristin Davin, Devin Horenstein', lastCallNotes: "2026-10-09 (Trello): RateOptics training establishing one shared master rate card for AEs/Kristin/Danny (replacing multiple Excel cards), covering quarterly views, political-window floors, P-code tiers, and read-only seller access; action item to enable 35-64/35+ impressions metrics." },
-    { id: 'fri-nexstar-indianapolis', day: 'Friday', date: '2026-10-23', time: '1:00 PM ET', company: 'Nexstar Media Group', label: 'Indianapolis', attendees: 'Michelle Kenney, Jason Bean, Aaron Crone', lastCallNotes: "2026-10-09 (Outlook): 'RateOptics Bi-Weekly | Nexstar Indianapolis' session held with Nexstar Indianapolis (FOX59) - now confirmed on a bi-weekly, 30-minute cadence per the organizer's note ('Moving this to a bi-weekly, 30-minute call, now that you are RateOptics pros!'); attendees included Michelle Kenney, Jason Bean, Aaron Crone." }
+    { id: 'mon-entravision-denver', day: 'Monday', date: '2026-10-26', time: '10:00 AM ET', company: 'Entravision Communications', label: 'Denver', attendees: 'Don Daboub, Pamela Cordero', lastCallNotes: "2026-10-19 (Outlook): Recurring 'RateOptics Political Touchpoint' meeting with Entravision Denver (Don Daboub, Pamela Cordero) - cadence continues (also held 10/12, 9/28, 9/21, 9/14; skipped the week of 10/5); no detailed notes logged beyond the calendar entries." },
+    { id: 'mon-entravision-lasvegas', day: 'Monday', date: '2026-10-26', time: '1:00 PM ET', company: 'Entravision Communications', label: 'Las Vegas', attendees: 'Christopher Jordan, Nancy Shehab, Fanny Martinez, Octavio Garcia', lastCallNotes: "2026-10-19 (Outlook): Recurring 'RateOptics Touchpoint' meeting with Entravision Las Vegas (Christopher Jordan, Nancy Shehab, Fanny Martinez, Octavio Garcia) - weekly touchpoint to review violations ahead of the General Election; weekly cadence continues (also held 10/12, 9/28, 9/21, 9/14)." },
+    { id: 'mon-hearst-desmoines', day: 'Monday', date: '2026-10-26', time: '2:00 PM ET', company: 'Hearst Television', label: 'DES MOINES-AMES', attendees: 'Kelly Beeck', lastCallNotes: "2026-09-28 (Outlook): 'RateOptics Touchpoint' meeting held with Kelly Beeck (Hearst KCCI); no detailed notes logged beyond the calendar entry." },
+    { id: 'tue-sinclair-accountwide', day: 'Tuesday', date: '2026-10-27', time: '11:00 AM ET', company: 'Sinclair Broadcast Group', label: 'Account-wide', attendees: 'Ryan Beinstein, Robert Lewis, Dominick Latorre, Ryan McCoy, Billy Robbins', lastCallNotes: "No notes logged yet - Sinclair Broadcast Group's Trello board tracks product asks and bugs, not per-call touchpoint notes." },
+    { id: 'tue-hearst-orlando', day: 'Tuesday', date: '2026-10-27', time: '2:00 PM ET', company: 'Hearst Television', label: 'ORLANDO-DAYTONA BEACH-MELBOURNE', attendees: 'Sam Johnson, Austin Shea', lastCallNotes: "2026-09-22 (Outlook): 'RateOptics Touchpoint | WKCF Orlando' meeting held with the Hearst Orlando team; no detailed notes logged beyond the calendar entry." },
+    { id: 'tue-nexstar-myrtlebeach', day: 'Tuesday', date: '2026-10-27', time: '3:00 PM ET', company: 'Nexstar Media Group', label: 'Myrtle Beach', attendees: 'Jeff Taylor, Amy Bonnell, Matt Bowman', lastCallNotes: "2026-10-20 (Trello): RateOptics Training & Feedback call with Nexstar Myrtle Beach (Amy Bonnell, Matt Bowman, Jeff Taylor); reviewed/finalized the Q1 five-tier rate card incl. NFL Wild Card/Divisional and NCAA Final Four/Championship placeholders, raised several daytime/news/access floors, initialized a Q2 tiered card off Q1 multipliers, and planned to verify political is excluded from AUR metrics; next step is exporting Q1/Q2 cards to Excel for redline review." },
+    { id: 'wed-hearst-pittsburgh', day: 'Wednesday', date: '2026-10-28', time: '10:00 AM ET', company: 'Hearst Television', label: 'Pittsburgh', attendees: 'Lauren Finkel, DJ Cavanaugh, Brooke Panepinto Manfredi', lastCallNotes: "2026-09-30 (Trello): Savannah and Lauren discussed migrating Hearst WTAE's programming from WAMS into RateOptics to minimize duplicate manual work; Lauren will send a Q1 Excel export as a fallback while Savannah confirms import options with JT." },
+    { id: 'wed-hearst-burlington', day: 'Wednesday', date: '2026-10-28', time: '11:00 AM ET', company: 'Hearst Television', label: 'BURLINGTON-PLATTSBURGH', attendees: 'Pat Gram, Jill Soulia', lastCallNotes: "2026-09-22 (Trello): RateOptics training for Alex (a new account associate) covering the Dynamic Rate Card, Advertiser Insights, and Aida proposal review; Jill and Pat remain the final decision-makers on rates." },
+    { id: 'wed-hearst-harrisburg', day: 'Wednesday', date: '2026-10-28', time: '1:00 PM ET', company: 'Hearst Television', label: 'HARRISBURG-LNCSTR-lEB-YORK', attendees: 'Ben Warntz', lastCallNotes: "2026-10-14 (Trello): Q1 2027 ~95-98% booked; set P5=1.16x, P4=1.33x, P3=2x, P2=3x vs P6; flagged data issues (Entertainment Tonight duplicate entries, missing Chicago Med rec); next review 10/28." },
+    { id: 'fri-amcn-accountwide', day: 'Friday', date: '2026-10-30', time: '12:30 PM ET', company: 'AMC Networks (AMCN)', label: 'Account-wide', attendees: 'Christine Esser, Jason Baron, Cory Angerthal, Richard Bula, and 4 others', lastCallNotes: "No notes logged yet - AMC Networks (AMCN) has no Trello board tracking call notes." }
   ];
 
-  const EXTERNAL_DATA = { lastSyncedAt: '2026-10-23' };
+  const EXTERNAL_DATA = { lastSyncedAt: '2026-10-26' };
 
   function buildMarkets(companyName) {
     const callData = MARKET_CALL_DATA[companyName] || {};
