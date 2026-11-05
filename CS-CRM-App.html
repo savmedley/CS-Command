@@ -133,6 +133,15 @@
   const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
   const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
 
+  // SCHEDULED SYNC NOTE (2026-11-05): usage-data.json on main is still generatedDate 2026-10-28 (the PC
+  // usage pull has not committed for 6 weekdays), so it was not used. Fallback: the MediaPG "Weekly Usage
+  // Review - Master.xlsx" was re-saved 2026-11-04, but its pivots still stop at October and the Capitol, Renda,
+  // AMCN and Nexstar tabs spot-checked match what is on file exactly, so MARKET_USAGE_DATA and the usageDrop
+  // flags are unchanged. Trello: no new market touchpoints (only a duplicate copy of the Hearst Des Moines 11/03
+  // card); a new Sinclair 11/03 account-wide touchpoint card now feeds that meeting's last-call notes. Outlook:
+  // same 7 customer meetings this week. Jira: AMCN 6->8 (RO-11313, RO-11315), Nexstar 5->6 (RO-11316,
+  // Indianapolis), Sinclair 46->47 (+RO-11308, +RO-11311, -RO-11298 resolved).
+
   // SCHEDULED SYNC NOTE (2026-11-04): usage-data.json on main is still generatedDate 2026-10-28 (the PC
   // usage pull has not committed for 5 weekdays), so it was not used. Fallback: a newer "Weekly Usage Review -
   // Master.xlsx" copy on the MediaPG SharePoint site (last modified 2026-10-31) - its per-market totals for
@@ -308,6 +317,8 @@
   // got an empty "11/3/2026 Touchpoint" agenda template - Sinclair has no per-market entries). Outlook
   // advanced Entravision Denver and Las Vegas to their 2026-11-02 weekly touchpoints. No other changes; no
   // personal/internal chatter encountered.
+  // Re-checked 2026-11-05: no new market touchpoint cards since 11/04 (Hearst Des Moines got a duplicate copy
+  // of the 11/03 Kelly Beeck card - no new content). No entries changed.
   const MARKET_CALL_DATA = {
     "Hearst Television": {
       "BIRMINGHAM (ANN AND TUSC)": "2026-03-12 (Trello): A touchpoint card exists but has no description or comments logged - no substantive detail available.",
@@ -400,10 +411,16 @@
   // 712->684 (-4%, false; tab's market rows are suspect but no drop either way), Hearst 226->231 (+2%, now
   // false), Entravision 207->158 (-24%, now true), Gray 26->22 (-15%, borderline, kept true), Renda 7->5
   // (-29%, now true), Capitol 2->1 (-50%, now true - very low base), Paramount no tab (unchanged false).
+  // Re-pulled 2026-11-05: AMCN 6->8 (new RO-11313 DR Rate Quintiles report + Horizon Tracker $ formatting;
+  // new RO-11315 Report Assistant percent columns rendering as 1%/0% on AMCN reports). Nexstar 5->6 (new
+  // RO-11316, HIPR drag-reorder bug found on a Nexstar WTTV/WXIN report). Sinclair raw 48->49: RO-11298
+  // resolved (Testing Required 11/04), new RO-11308 (narrow time exceptions) and RO-11311 (P-codes renamed to
+  // Sec levels) -> 47. Hearst (77 raw), Entravision (32), Gray (37 bare "Gray"), Paramount (0), Renda (1) and
+  // Capitol (2) unchanged. usageDrop unchanged - the 11/04 workbook re-save has the same Sep/Oct totals.
   const ACCOUNT_SYNC_META = {
-    "AMC Networks (AMCN)": { unresolvedTickets: 6, usageDrop: true },
-    "Nexstar Media Group": { unresolvedTickets: 5, usageDrop: true },
-    "Sinclair Broadcast Group": { unresolvedTickets: 46, usageDrop: false },
+    "AMC Networks (AMCN)": { unresolvedTickets: 8, usageDrop: true },
+    "Nexstar Media Group": { unresolvedTickets: 6, usageDrop: true },
+    "Sinclair Broadcast Group": { unresolvedTickets: 47, usageDrop: false },
     "Hearst Television": { unresolvedTickets: 86, usageDrop: false },
     "Entravision Communications": { unresolvedTickets: 30, usageDrop: true },
     "Gray Television": { unresolvedTickets: 29, usageDrop: true },
@@ -439,10 +456,12 @@
   // specific market, so none were added.
   // Re-checked 2026-11-04: new tickets RO-11306 (Nexstar) and RO-11303 (Sinclair) name no specific market;
   // no market ticket resolved since 11/03 - no entries changed.
+  // Re-checked 2026-11-05: added RO-11316 to Nexstar Indianapolis (the ticket names the WTTV/WXIN College
+  // Basketball HIPR report). New RO-11313/RO-11315 (AMCN), RO-11308/RO-11311 (Sinclair) name no specific market.
   const MARKET_TICKETS_DATA = {
     "AMC Networks (AMCN)": {},
     "Nexstar Media Group": {
-      "Indianapolis": "RO-11013: Political LUR miscounts credited/preempted spots (reported via Nexstar's WTTV order); RO-11092: Michelle/Aaron want a Category Report and Advertiser Pacing Report replicated from Matrix",
+      "Indianapolis": "RO-11316: HIPR single-airing programs can't be drag-reordered (found on the WTTV/WXIN College Basketball report); RO-11013: Political LUR miscounts credited/preempted spots (reported via Nexstar's WTTV order); RO-11092: Michelle/Aaron want a Category Report and Advertiser Pacing Report replicated from Matrix",
       "Champaign": ""
     },
     "Sinclair Broadcast Group": {
@@ -532,10 +551,13 @@
   // none cancelled): 7 customer meetings kept. Entravision Las Vegas (Mon), Hearst Louisville (Tue) and Nexstar
   // Champaign (Wed) no longer appear on the calendar (direct searches return nothing; Champaign's next
   // occurrence is 11/18) and were dropped. Des Moines' last-call notes now use the new 11/03 Trello card.
+  // Rebuilt 2026-11-05 from a fresh Outlook pull (Mon 2026-11-02 00:00 - Sat 2026-11-07 00:00 ET, 25 events,
+  // none cancelled): the same 7 customer meetings. Sinclair's last-call notes now use the new 11/03 touchpoint
+  // card on the "Sinclair Internal Meeting Summaries" Trello board.
   const WEEKLY_GLANCE_MONDAY = '2026-11-02';
   const WEEKLY_MEETINGS_DATA = [
     { id: "mon-entravision-denver", day: "Monday", date: "2026-11-02", time: "10:00 AM ET", company: "Entravision Communications", label: "Denver", attendees: "Don Daboub, Pamela Cordero", lastCallNotes: "2026-11-02 (Outlook): Recurring 'RateOptics Political Touchpoint | Entravision Denver' meeting held with Don Daboub and Pamela Cordero (both accepted) - weekly political cadence continues (also held 10/19, 10/12, 9/28, 9/21, 9/14); no detailed notes logged beyond the calendar entry." },
-    { id: "tue-sinclair-accountwide", day: "Tuesday", date: "2026-11-03", time: "11:00 AM ET", company: "Sinclair Broadcast Group", label: "Account-wide", attendees: "Ryan Beinstein, Robert Lewis, Dominick Latorre, Billy Robbins", lastCallNotes: "No notes logged yet - Sinclair Broadcast Group's Trello board tracks product asks and bugs, not per-call touchpoint notes." },
+    { id: "tue-sinclair-accountwide", day: "Tuesday", date: "2026-11-03", time: "11:00 AM ET", company: "Sinclair Broadcast Group", label: "Account-wide", attendees: "Ryan Beinstein, Robert Lewis, Dominick Latorre, Billy Robbins", lastCallNotes: "(Trello, 2026-11-03) Ryan Beinstein, Robert Lewis and Billy Robbins liked the Advertiser Details updates (labeled \"Section Level\") and the Inventory Insights section-level prototype (add percentage columns); Ryan wants screen-level permission roles in usage data to grade markets in 2027, and Billy will share WOMS exports so RA can reduce the manual rate-card handoff." },
     { id: "tue-hearst-desmoines", day: "Tuesday", date: "2026-11-03", time: "3:00 PM ET", company: "Hearst Television", label: "DES MOINES-AMES", attendees: "Kelly Beeck", lastCallNotes: "2026-11-03 (Trello): Touchpoint with Kelly Beeck (KCCI) after a record ~$45.8M political cycle - agreed to remove the political oversold bump before the next rate refresh, audit ratings-impact settings, reformat the RateOptics card to match her WOMS-exported Q1 three-tier card (times, de-duped rows, daypart headers) and add March Madness/Iowa sports placeholders; next review Mon 11/16 9am CT, including AE default views." },
     { id: "wed-entravision-officehours", day: "Wednesday", date: "2026-11-04", time: "4:00 PM ET", company: "Entravision Communications", label: "Office Hours (all markets)", attendees: "Zachary Foster, Miranda Cowdrey, Carmen Sepulveda, Juan Navarro, and 25 others", lastCallNotes: "(Trello, 2026-10-01) Political sync: agreed to set up a weekly call with Debbie to review political-rate violations and update McAllen/Laredo/Corpus political rate cards, prioritizing political dollars over protecting core inventory; a violation-tracker button that sets a rate to the booked LUR was in testing." },
     { id: "fri-hearst-westpalm", day: "Friday", date: "2026-11-06", time: "10:00 AM ET", company: "Hearst Television", label: "WEST PALM BEACH-FT. PIERCE", attendees: "Danny Hastaba, Kristin Davin, Devin Horenstein", lastCallNotes: "2026-10-23 (Trello): Reviewed a recurring $25 rate rounding discrepancy (product team removing the rounding logic; Savannah will re-enter affected rates) and investigated bowl-game sports programs reverting to their previous sort order after being reorganized chronologically; Devin to re-export and verify sort stability the next morning." },
@@ -543,7 +565,7 @@
     { id: "fri-nexstar-indianapolis", day: "Friday", date: "2026-11-06", time: "1:00 PM ET", company: "Nexstar Media Group", label: "Indianapolis", attendees: "Michelle Kenney, Jason Bean, Aaron Crone", lastCallNotes: "2026-10-23 (Outlook): 'RateOptics Bi-Weekly | Nexstar Indianapolis' session held with Nexstar Indianapolis (FOX59) on the established bi-weekly 30-minute cadence; no detailed notes logged beyond the calendar entry; attendees included Michelle Kenney, Jason Bean, Aaron Crone." }
   ];
 
-  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-04' };
+  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-05' };
 
   function buildMarkets(companyName) {
     const callData = MARKET_CALL_DATA[companyName] || {};
