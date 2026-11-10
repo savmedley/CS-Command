@@ -342,6 +342,9 @@
   // the new 10/23 Trello card). AMCN's new 11/06 card is account-wide, so it only feeds the weekly meetings tab.
   // The 10/23 Indianapolis card lists Sherry Stephens as a Nexstar participant; she is RA staff, so that line was
   // not used.
+  // Re-checked 2026-11-10: no board has a new touchpoint card since 11/09 (Sinclair Open Items only got Zendesk
+  // support-ticket comments from Ryan Beinstein - account-level, no market). Entravision Monterey advanced to its
+  // 11/09 Outlook working session with Sean Stade (2027 priority rate card).
   const MARKET_CALL_DATA = {
     "Hearst Television": {
       "BIRMINGHAM (ANN AND TUSC)": "2026-03-12 (Trello): A touchpoint card exists but has no description or comments logged - no substantive detail available.",
@@ -363,7 +366,7 @@
     "Entravision Communications": {
       "Denver": "2026-11-02 (Outlook): Recurring 'RateOptics Political Touchpoint | Entravision Denver' meeting held with Don Daboub and Pamela Cordero (both accepted) - weekly political cadence continues (also held 10/19, 10/12, 9/28, 9/21, 9/14); no detailed notes logged beyond the calendar entry.",
       "Las Vegas": "2026-11-02 (Trello): Weekly political-violations review with Christopher Jordan, Fanny Martinez and Octavio Garcia - radio was clean; TV Vegas had same-day 15s spots (McDonald's, IKEA) to review or pull before airing, and a Reno TV Kaiser spot at $30 vs a $50 rate is being moved later in the week; Savannah to send screenshots and Christopher to decide with Carla.",
-      "Monterey": "2026-10-12 (Trello): Reconciled Spark proposal-pricing rates against RateOptics (Spark may only ingest 30s rates), corrected KSMS/KSCS political LUR rates to clear violations, and discussed a 2027 three-tier static rate card planned for after the political window closes."
+      "Monterey": "2026-11-09 (Outlook): 'Rate Optics - Monterey (2027 Priority Rate Card)' working session held with Sean Stade (organizer) on the 2027 priority rate card; no notes logged yet. Last detailed notes (Trello, 10/12): Reconciled Spark proposal-pricing rates against RateOptics (Spark may only ingest 30s rates), corrected KSMS/KSCS political LUR rates to clear violations, and discussed a 2027 three-tier static rate card planned for after the political window closes."
     },
     "Gray Television": {
       "Omaha, NE": "2026-10-22 (Trello): RateOptics University session to finalize the 2027 rate card - Karen's WOMS-built Q1 2027 card will be uploaded and copied to all 2027 quarters, key sports rates set (NBA regular season $225 minimum, Sunday Night Football $2,700, new NFL Wild Card/Divisional games $3,000), and new features demoed (rate card search bar, Advertiser Details, default rate card); Savannah to add new AEs, and Dan to schedule a post-election pricing strategy session and December AE training."
@@ -450,11 +453,16 @@
   // on WPTZ) and RO-11322 (nightly OOM pipeline failures, hearst WKCF among the failing channels) both counted
   // -> 87. Nexstar (6), Sinclair (raw 50), Entravision (raw 31), Gray (raw 37 bare "Gray"), Paramount (0), Renda
   // (1) and Capitol (2) unchanged. usageDrop unchanged (no workbook or usage-data.json newer than October).
+  // Re-pulled 2026-11-10: AMCN raw 10->9 (RO-11315 Testing Required 11/09) -> 8. Hearst raw 78->77 (RO-11324 Done
+  // 11/09) -> 86. Sinclair raw 50->49 and confirmed stays 48: RO-11321 (Done) and RO-11303 (Testing Required)
+  // resolved; new RO-11328 (Ryan Beinstein: center all Excel export columns) and RO-11329 (move Sinclair bulk
+  // rates transfer to 03:30 EST) counted. Nexstar (raw 8), Entravision, Gray, Paramount, Renda and Capitol
+  // unchanged. usageDrop unchanged (usage-data.json still 10/28; newest workbook still the 11/04-11/05 save).
   const ACCOUNT_SYNC_META = {
-    "AMC Networks (AMCN)": { unresolvedTickets: 9, usageDrop: true },
+    "AMC Networks (AMCN)": { unresolvedTickets: 8, usageDrop: true },
     "Nexstar Media Group": { unresolvedTickets: 6, usageDrop: true },
     "Sinclair Broadcast Group": { unresolvedTickets: 48, usageDrop: false },
-    "Hearst Television": { unresolvedTickets: 87, usageDrop: false },
+    "Hearst Television": { unresolvedTickets: 86, usageDrop: false },
     "Entravision Communications": { unresolvedTickets: 29, usageDrop: true },
     "Gray Television": { unresolvedTickets: 29, usageDrop: true },
     "Paramount Global": { unresolvedTickets: 0, usageDrop: false },
@@ -498,6 +506,8 @@
   // Re-checked 2026-11-09: Hearst Burlington gains RO-11324 (P Code re-initialize regression found on WPTZ; RO-10294
   // moves into "+1 more"). Hearst Orlando gains RO-11322 (nightly OOM failures listing hearst WKCF). New AMCN
   // RO-11325 has no market breakdown. No market ticket was resolved since 11/06.
+  // Re-checked 2026-11-10: Hearst Burlington drops RO-11324 (Done 11/09), so RO-10294 is shown again. Sinclair
+  // Baltimore drops RO-11321 (Done 11/09). New Sinclair RO-11328/RO-11329 name no specific market.
   const MARKET_TICKETS_DATA = {
     "AMC Networks (AMCN)": {},
     "Nexstar Media Group": {
@@ -513,7 +523,7 @@
       "Little Rock, AR": "RO-11194: WOMS auto-map picks the right show but wrong airing (KATV); RO-11192: WOMS XML export sends unrounded tier-cascaded override values (KATV)",
       "Seattle, WA (TV)": "RO-10809: Newly added traffic-system program not sorted near matching day-of-week/time programs (KOMO Dynamic Rate Card); RO-5604: Rate Card Inventory Code/Programs filters load very slowly (KOMO, 767-segment example)",
       "Austin, TX": "RO-10281: Political-window initialization popup doesn't name which window(s) it affects when multiple are selected (KEYE); RO-7319: Close rate should never be below P3 rate (multi-market ticket incl. Austin)",
-      "Baltimore, MD": "RO-11321: Emailed Rate Generator reports ignore the saved date range (WBFF/WNUV email had 342 extra rows vs. screen); RO-9800: Holding Capacity feature requested, using 3 Baltimore stations as the worked example; RO-8743: Day of Week missing in Advertiser Insights for some programming (WBFF); RO-6876: WBFF 6a News rates barely moved after a reference-rate fix",
+      "Baltimore, MD": "RO-9800: Holding Capacity feature requested, using 3 Baltimore stations as the worked example; RO-8743: Day of Week missing in Advertiser Insights for some programming (WBFF); RO-6876: WBFF 6a News rates barely moved after a reference-rate fix",
       "Las Vegas, NV": "RO-7993: Discount-vs-weeks-prior pricing idea, starting with oversold station KNSV",
       "Abilene, TX": "RO-7319: Close rate should never be below P3 rate (multi-market ticket naming KTXS/Abilene)",
       "Albany, NY": "RO-7319: Close rate should never be below P3 rate (multi-market ticket incl. Albany, NY)",
@@ -521,7 +531,7 @@
     },
     "Hearst Television": {
       "Pittsburgh": "RO-11175: Lauren wants 2027 Q1/Q2 rates set, mostly for sports and specials; RO-11174: WTAE wants $50 (not $100) rate rounding in the $1k-5k range; RO-10421: Hearst (especially WTAE) wants ratings data incorporated into Aida; RO-10294: WOMS auto-map misses recurring WTAE programs (Family Feud, Jennifer Hudson, DWTS, etc.) - Lauren compiling the full list (+6 more)",
-      "BURLINGTON-PLATTSBURGH": "RO-11324: Re-initializing a P Code quarter with new settings doesn't update existing rates (regression found on WPTZ); RO-11122: Wants past P-Code quarter metrics, 2+ years back, skipping political years; RO-11121: Hearst Burlington asks why a program has no rate; RO-10762: SQAD metrics requested by Hearst Burlington (+1 more)",
+      "BURLINGTON-PLATTSBURGH": "RO-11122: Wants past P-Code quarter metrics, 2+ years back, skipping political years; RO-11121: Hearst Burlington asks why a program has no rate; RO-10762: SQAD metrics requested by Hearst Burlington; RO-10294: Program matching so Burlington can upload RateOptics rates into WOMS",
       "DES MOINES-AMES": "RO-11172: KCCI political-minutes booking detail cited in the cross-customer political-LUR bug; RO-11150: Add an LY AUR metric; RO-11149: New 'under 70% low predicted sellout' insight (+1 more)",
       "MONTEREY-SALINAS": "RO-11194: WOMS live mappings point at segments with no current rates on several stations incl. KSBW; RO-9737: Jeff's WideOrbit traffic-data cleanup call (shared with Cincinnati); RO-9734: Duplicate KSBW_ET program rows after a station/program breakout; RO-3638: KSBW_ET pipeline failures in generateRDS step (+2 more)",
       "CINCINNATI": "RO-11013: Verification case for the political-LUR credited/displaced-spot bug (WLWT); RO-9737: Jeff's WideOrbit traffic-data cleanup call (shared with Monterey-Salinas)",
@@ -602,17 +612,21 @@
   // 6 customer meetings kept. Excluded standups, 1:1s, reminder/OOO blocks, Customer Health Review (internal),
   // the cancelled Lunch & Learn, Cumulus and SiriusXM meetings, and a personal event. Sinclair's Ryan McCoy and
   // Robert Lewis declined and are omitted. AMCN's last-call notes now use its new 11/06 Trello card.
+  // Rebuilt 2026-11-10 from a fresh Outlook pull (Mon 2026-11-09 00:00 - Sat 2026-11-14 00:00 ET, 21 events):
+  // 5 customer meetings kept. The Sinclair Tuesday account-wide call is no longer on the calendar (a direct
+  // "Sinclair" search returns nothing this week), so it was dropped. Monterey keeps the 10/12 notes as the call
+  // before Monday's session. Excluded standups, 1:1s, reminder/OOO blocks, Customer Health Review (internal), the
+  // cancelled Lunch & Learn, Cumulus and SiriusXM meetings, and a personal event.
   const WEEKLY_GLANCE_MONDAY = '2026-11-09';
   const WEEKLY_MEETINGS_DATA = [
     { id: "mon-entravision-monterey", day: "Monday", date: "2026-11-09", time: "4:00 PM ET", company: "Entravision Communications", label: "Monterey", attendees: "Sean Stade", lastCallNotes: "2026-10-12 (Trello): Reconciled Spark proposal-pricing rates against RateOptics (Spark may only ingest 30s rates), corrected KSMS/KSCS political LUR rates to clear violations, and discussed a 2027 three-tier static rate card planned for after the political window closes." },
-    { id: "tue-sinclair-accountwide", day: "Tuesday", date: "2026-11-10", time: "11:00 AM ET", company: "Sinclair Broadcast Group", label: "Account-wide", attendees: "Ryan Beinstein, Dominick Latorre, Billy Robbins", lastCallNotes: "(Trello, 2026-11-03) Ryan Beinstein, Robert Lewis and Billy Robbins liked the Advertiser Details updates (labeled \"Section Level\") and the Inventory Insights section-level prototype (add percentage columns); Ryan wants screen-level permission roles in usage data to grade markets in 2027, and Billy will share WOMS exports so RA can reduce the manual rate-card handoff." },
     { id: "wed-renda-ftmyers", day: "Wednesday", date: "2026-11-11", time: "11:00 AM ET", company: "Renda Broadcasting", label: "Ft. Myers", attendees: "Amber Morgerson", lastCallNotes: "2026-09-30 (Outlook): 'RateOptics Check In and Updates - Renda' meeting held with Renda (A. Morgerson); no detailed notes logged beyond the calendar entry." },
     { id: "wed-hearst-harrisburg", day: "Wednesday", date: "2026-11-11", time: "1:00 PM ET", company: "Hearst Television", label: "HARRISBURG-LNCSTR-lEB-YORK", attendees: "Ben Warntz", lastCallNotes: "2026-10-28 (Trello): Touchpoint with Ben Warntz (WGAL's local rate-card owner) to restructure the rate card - fold swing-break inventory (7:58-8:00) into Prime A Mon/Wed/Thu/Fri, keep NBA under Sports, and resolve duplicate/misaligned program rows from Traffic feeds; Q2 five-tier card auto-generated live with agreed multipliers (1.16/1.33/2.0/1.20); reconvene in ~2 weeks post-political." },
     { id: "fri-amcn-accountwide", day: "Friday", date: "2026-11-13", time: "12:30 PM ET", company: "AMC Networks (AMCN)", label: "Account-wide", attendees: "Christine Esser, Jason Baron, Cory Angerthal, Richard Bula, and 4 others", lastCallNotes: "(Trello, 2026-11-06) AMCN said Report Assistant/Report Studio look good. Bookings are up ~10% QoQ and ~93% booked to budget. Open items: a percent-rounding bug in previews (fix planned), reconciling the audience-budget method with AMC Research (Tom to share a template), a raw-export option for Copilot/Claude analysis, a seller landing screen preview, a pre/post-log review against WideOrbit automation, and broader AE training deferred to Q1." },
     { id: "fri-hearst-burlington", day: "Friday", date: "2026-11-13", time: "2:00 PM ET", company: "Hearst Television", label: "BURLINGTON-PLATTSBURGH", attendees: "Jill Soulia, Pat Gram", lastCallNotes: "2026-09-22 (Trello): RateOptics training for Alex (a new account associate) covering the Dynamic Rate Card, Advertiser Insights, and Aida proposal review; Jill and Pat remain the final decision-makers on rates." }
   ];
 
-  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-09' };
+  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-10' };
 
   function buildMarkets(companyName) {
     const callData = MARKET_CALL_DATA[companyName] || {};
