@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-28T07:55:32-04:00",
-  "generatedDate": "2026-10-28",
+  "generatedAt": "2026-11-11T09:59:59-05:00",
+  "generatedDate": "2026-11-11",
   "source": "RateOptics segment DB (rateoptics.vw_events_summary) via usage skills",
   "period": "2026-01-01 to date",
   "notes": "daysActive = unique-days-active skill; dataLoads = unique-data-loads skill, event_name = 'User Loaded Data' only. Markets are raw reporting_market_station values.",
@@ -9,12 +9,12 @@
       "companyName": "AMC Networks",
       "markets": {
         "AMC": {
-          "daysActive": 154,
-          "dataLoads": 110
+          "daysActive": 29,
+          "dataLoads": 19
         },
         "National": {
-          "daysActive": 101,
-          "dataLoads": 72
+          "daysActive": 230,
+          "dataLoads": 165
         }
       },
       "monthly": {
@@ -57,6 +57,10 @@
         "2026-10": {
           "daysActive": 6,
           "dataLoads": 8
+        },
+        "2026-11": {
+          "daysActive": 4,
+          "dataLoads": 2
         }
       }
     },
@@ -64,16 +68,20 @@
       "companyName": "Nexstar Media Group",
       "markets": {
         "Champaign": {
-          "daysActive": 187,
-          "dataLoads": 426
+          "daysActive": 192,
+          "dataLoads": 431
         },
         "Indianapolis": {
-          "daysActive": 157,
-          "dataLoads": 328
+          "daysActive": 193,
+          "dataLoads": 398
+        },
+        "Multi-Market": {
+          "daysActive": 7,
+          "dataLoads": 10
         },
         "Myrtle Beach": {
-          "daysActive": 47,
-          "dataLoads": 74
+          "daysActive": 52,
+          "dataLoads": 79
         },
         "Tampa": {
           "daysActive": 27,
@@ -98,8 +106,12 @@
           "dataLoads": 224
         },
         "2026-10": {
-          "daysActive": 38,
-          "dataLoads": 59
+          "daysActive": 45,
+          "dataLoads": 68
+        },
+        "2026-11": {
+          "daysActive": 46,
+          "dataLoads": 81
         }
       }
     },
@@ -111,168 +123,168 @@
           "dataLoads": 1379
         },
         "Abilene, TX": {
-          "daysActive": 165,
-          "dataLoads": 526
+          "daysActive": 168,
+          "dataLoads": 538
         },
         "Albany, NY": {
-          "daysActive": 359,
-          "dataLoads": 1367
+          "daysActive": 371,
+          "dataLoads": 1401
         },
         "Amarillo, TX": {
-          "daysActive": 587,
-          "dataLoads": 3337
+          "daysActive": 617,
+          "dataLoads": 3491
         },
         "Asheville, NC": {
-          "daysActive": 110,
-          "dataLoads": 440
+          "daysActive": 113,
+          "dataLoads": 458
         },
         "Austin, TX": {
-          "daysActive": 420,
-          "dataLoads": 889
+          "daysActive": 434,
+          "dataLoads": 916
         },
         "Bakersfield, CA": {
-          "daysActive": 805,
-          "dataLoads": 10589
+          "daysActive": 845,
+          "dataLoads": 11021
         },
         "Baltimore, MD": {
-          "daysActive": 1363,
-          "dataLoads": 7986
+          "daysActive": 1428,
+          "dataLoads": 8378
         },
         "Beaumont, TX": {
-          "daysActive": 40,
-          "dataLoads": 134
+          "daysActive": 44,
+          "dataLoads": 144
         },
         "Birmingham, AL": {
-          "daysActive": 506,
-          "dataLoads": 1252
+          "daysActive": 524,
+          "dataLoads": 1276
         },
         "Boise, ID": {
-          "daysActive": 745,
-          "dataLoads": 3779
+          "daysActive": 925,
+          "dataLoads": 4680
         },
         "Buffalo, NY": {
-          "daysActive": 110,
-          "dataLoads": 313
+          "daysActive": 111,
+          "dataLoads": 316
         },
         "Butte, MT": {
-          "daysActive": 148,
-          "dataLoads": 433
+          "daysActive": 150,
+          "dataLoads": 438
         },
         "Cedar Rapids, IA": {
           "daysActive": 172,
           "dataLoads": 569
         },
         "Charleston, SC": {
-          "daysActive": 40,
-          "dataLoads": 58
+          "daysActive": 42,
+          "dataLoads": 61
         },
         "Charleston, WV": {
-          "daysActive": 212,
-          "dataLoads": 722
+          "daysActive": 219,
+          "dataLoads": 742
         },
         "Chattanooga, TN": {
-          "daysActive": 421,
-          "dataLoads": 2381
+          "daysActive": 435,
+          "dataLoads": 2443
         },
         "Cincinnati, OH": {
-          "daysActive": 436,
-          "dataLoads": 3194
+          "daysActive": 461,
+          "dataLoads": 3315
         },
         "Columbia, MO": {
-          "daysActive": 167,
-          "dataLoads": 355
+          "daysActive": 181,
+          "dataLoads": 379
         },
         "Columbia, SC": {
-          "daysActive": 40,
-          "dataLoads": 87
+          "daysActive": 43,
+          "dataLoads": 93
         },
         "Columbus, OH": {
-          "daysActive": 278,
-          "dataLoads": 809
+          "daysActive": 293,
+          "dataLoads": 838
         },
         "Corpus Christi, TX": {
-          "daysActive": 481,
-          "dataLoads": 2845
+          "daysActive": 501,
+          "dataLoads": 2906
         },
         "Dayton, OH": {
-          "daysActive": 233,
-          "dataLoads": 787
+          "daysActive": 242,
+          "dataLoads": 814
         },
         "Des Moines, IA": {
-          "daysActive": 91,
-          "dataLoads": 261
+          "daysActive": 93,
+          "dataLoads": 263
         },
         "El Paso, TX": {
-          "daysActive": 189,
-          "dataLoads": 497
+          "daysActive": 196,
+          "dataLoads": 518
         },
         "Eugene, OR": {
-          "daysActive": 189,
-          "dataLoads": 1270
+          "daysActive": 195,
+          "dataLoads": 1288
         },
         "Eureka, CA": {
           "daysActive": 3,
           "dataLoads": 11
         },
         "Flint, MI": {
-          "daysActive": 61,
-          "dataLoads": 116
+          "daysActive": 64,
+          "dataLoads": 124
         },
         "Fresno, CA": {
-          "daysActive": 152,
-          "dataLoads": 554
+          "daysActive": 155,
+          "dataLoads": 562
         },
         "Gainesville, FL": {
-          "daysActive": 48,
-          "dataLoads": 81
+          "daysActive": 52,
+          "dataLoads": 85
         },
         "Grand Rapids, MI": {
-          "daysActive": 322,
-          "dataLoads": 1496
+          "daysActive": 334,
+          "dataLoads": 1548
         },
         "Green Bay, WI": {
-          "daysActive": 112,
-          "dataLoads": 197
+          "daysActive": 115,
+          "dataLoads": 201
         },
         "Greensboro, NC": {
-          "daysActive": 402,
-          "dataLoads": 830
+          "daysActive": 420,
+          "dataLoads": 874
         },
         "Greenville, NC": {
-          "daysActive": 593,
-          "dataLoads": 1284
+          "daysActive": 617,
+          "dataLoads": 1336
         },
         "Harrisburg, PA": {
-          "daysActive": 229,
-          "dataLoads": 502
+          "daysActive": 242,
+          "dataLoads": 535
         },
         "Johnstown, PA": {
           "daysActive": 34,
           "dataLoads": 149
         },
         "Las Vegas, NV": {
-          "daysActive": 46,
-          "dataLoads": 89
+          "daysActive": 49,
+          "dataLoads": 95
         },
         "Lincoln, NE": {
           "daysActive": 172,
           "dataLoads": 467
         },
         "Little Rock, AR": {
-          "daysActive": 246,
-          "dataLoads": 1607
+          "daysActive": 252,
+          "dataLoads": 1625
         },
         "Macon, GA": {
-          "daysActive": 120,
-          "dataLoads": 315
+          "daysActive": 124,
+          "dataLoads": 321
         },
         "Madison, WI": {
           "daysActive": 102,
           "dataLoads": 401
         },
         "Medford, OR": {
-          "daysActive": 88,
-          "dataLoads": 288
+          "daysActive": 91,
+          "dataLoads": 295
         },
         "Minneapolis, MN": {
           "daysActive": 57,
@@ -283,48 +295,48 @@
           "dataLoads": 275
         },
         "Mobile, AL": {
-          "daysActive": 130,
-          "dataLoads": 173
+          "daysActive": 135,
+          "dataLoads": 178
         },
         "Myrtle Beach, SC": {
-          "daysActive": 33,
-          "dataLoads": 56
+          "daysActive": 35,
+          "dataLoads": 59
         },
         "Nashville, TN": {
-          "daysActive": 160,
-          "dataLoads": 578
+          "daysActive": 171,
+          "dataLoads": 619
         },
         "Norfolk, VA": {
-          "daysActive": 99,
-          "dataLoads": 174
+          "daysActive": 101,
+          "dataLoads": 179
         },
         "Oklahoma City, OK": {
-          "daysActive": 206,
-          "dataLoads": 628
+          "daysActive": 211,
+          "dataLoads": 642
         },
         "Omaha, NE": {
-          "daysActive": 55,
-          "dataLoads": 102
+          "daysActive": 56,
+          "dataLoads": 105
         },
         "Pensacola, FL": {
-          "daysActive": 162,
-          "dataLoads": 218
+          "daysActive": 171,
+          "dataLoads": 227
         },
         "Pittsburgh, PA": {
           "daysActive": 88,
           "dataLoads": 359
         },
         "Portland, ME": {
-          "daysActive": 100,
-          "dataLoads": 299
+          "daysActive": 101,
+          "dataLoads": 301
         },
         "Portland, OR": {
-          "daysActive": 592,
-          "dataLoads": 2929
+          "daysActive": 607,
+          "dataLoads": 2965
         },
         "Providence, RI": {
-          "daysActive": 849,
-          "dataLoads": 2078
+          "daysActive": 886,
+          "dataLoads": 2166
         },
         "Raleigh, NC": {
           "daysActive": 26,
@@ -335,92 +347,92 @@
           "dataLoads": 220
         },
         "Reno, NV": {
-          "daysActive": 110,
-          "dataLoads": 414
+          "daysActive": 111,
+          "dataLoads": 422
         },
         "Richmond, VA": {
-          "daysActive": 923,
-          "dataLoads": 3116
+          "daysActive": 966,
+          "dataLoads": 3357
         },
         "Roanoke/Lynchburg, VA": {
-          "daysActive": 371,
-          "dataLoads": 1003
+          "daysActive": 386,
+          "dataLoads": 1036
         },
         "Rochester, NY": {
-          "daysActive": 88,
-          "dataLoads": 202
+          "daysActive": 89,
+          "dataLoads": 206
         },
         "Salt Lake City, UT": {
-          "daysActive": 464,
-          "dataLoads": 952
+          "daysActive": 481,
+          "dataLoads": 988
         },
         "San Antonio, TX": {
-          "daysActive": 288,
-          "dataLoads": 830
+          "daysActive": 303,
+          "dataLoads": 868
         },
         "Savannah, GA": {
-          "daysActive": 59,
-          "dataLoads": 165
+          "daysActive": 68,
+          "dataLoads": 185
         },
         "Seattle, WA (TV)": {
-          "daysActive": 181,
-          "dataLoads": 891
+          "daysActive": 34,
+          "dataLoads": 59
         },
         "Sioux City, IA": {
-          "daysActive": 63,
-          "dataLoads": 355
+          "daysActive": 68,
+          "dataLoads": 374
         },
         "South Bend, IN": {
-          "daysActive": 100,
-          "dataLoads": 245
+          "daysActive": 102,
+          "dataLoads": 249
         },
         "St. Louis, MO": {
           "daysActive": 3,
           "dataLoads": 4
         },
         "Steubenville, OH": {
-          "daysActive": 184,
-          "dataLoads": 886
+          "daysActive": 196,
+          "dataLoads": 923
         },
         "Syracuse, NY": {
-          "daysActive": 78,
-          "dataLoads": 287
+          "daysActive": 83,
+          "dataLoads": 303
         },
         "Tallahassee, FL": {
-          "daysActive": 283,
-          "dataLoads": 2089
+          "daysActive": 291,
+          "dataLoads": 2135
         },
         "Toledo, OH": {
-          "daysActive": 457,
-          "dataLoads": 1837
+          "daysActive": 479,
+          "dataLoads": 1931
         },
         "Traverse City, MI": {
-          "daysActive": 441,
-          "dataLoads": 2351
+          "daysActive": 458,
+          "dataLoads": 2472
         },
         "Tri Cities, TN": {
-          "daysActive": 130,
-          "dataLoads": 736
+          "daysActive": 133,
+          "dataLoads": 750
         },
         "Tulsa, OK": {
-          "daysActive": 173,
-          "dataLoads": 533
+          "daysActive": 176,
+          "dataLoads": 535
         },
         "Washington, DC": {
-          "daysActive": 685,
-          "dataLoads": 1477
+          "daysActive": 717,
+          "dataLoads": 1519
         },
         "West Palm Beach, FL": {
-          "daysActive": 341,
-          "dataLoads": 776
+          "daysActive": 354,
+          "dataLoads": 796
         },
         "Wichita, KS": {
-          "daysActive": 209,
-          "dataLoads": 757
+          "daysActive": 218,
+          "dataLoads": 774
         },
         "Wilkes-Barre, PA": {
-          "daysActive": 352,
-          "dataLoads": 1867
+          "daysActive": 363,
+          "dataLoads": 1908
         },
         "Yakima, WA": {
           "daysActive": 3,
@@ -465,8 +477,12 @@
           "dataLoads": 8062
         },
         "2026-10": {
-          "daysActive": 1594,
-          "dataLoads": 5894
+          "daysActive": 1850,
+          "dataLoads": 6738
+        },
+        "2026-11": {
+          "daysActive": 520,
+          "dataLoads": 2031
         }
       }
     },
@@ -478,56 +494,52 @@
           "dataLoads": 4
         },
         "BIRMINGHAM (ANN AND TUSC) ": {
-          "daysActive": 29,
-          "dataLoads": 102
+          "daysActive": 31,
+          "dataLoads": 108
         },
         "BOSTON": {
-          "daysActive": 77,
-          "dataLoads": 220
+          "daysActive": 78,
+          "dataLoads": 221
         },
         "BURLINGTON-PLATTSBURGH ": {
-          "daysActive": 803,
-          "dataLoads": 2112
+          "daysActive": 870,
+          "dataLoads": 2345
         },
         "CINCINNATI ": {
-          "daysActive": 106,
-          "dataLoads": 224
+          "daysActive": 134,
+          "dataLoads": 323
         },
         "DES MOINES-AMES ": {
-          "daysActive": 86,
-          "dataLoads": 153
+          "daysActive": 88,
+          "dataLoads": 160
         },
         "FT.SMITH-FAY-SPRNGOL-RGRS ": {
           "daysActive": 15,
           "dataLoads": 21
         },
         "Ft. Myers-Naples": {
-          "daysActive": 20,
-          "dataLoads": 35
+          "daysActive": 27,
+          "dataLoads": 43
         },
         "GREENSBORO-H.POINT-W.SALEM ": {
-          "daysActive": 15,
-          "dataLoads": 21
+          "daysActive": 16,
+          "dataLoads": 25
         },
         "GREENVILLE-SPARTANBURG-ASHEVILLE-ANDERSON ": {
           "daysActive": 4,
           "dataLoads": 7
         },
         "HARRISBURG-LNCSTR-lEB-YORK ": {
-          "daysActive": 84,
-          "dataLoads": 256
+          "daysActive": 86,
+          "dataLoads": 258
         },
         "JACKSON, MS ": {
           "daysActive": 1,
           "dataLoads": 2
         },
         "KANSAS CITY ": {
-          "daysActive": 6,
-          "dataLoads": 15
-        },
-        "KMBC": {
-          "daysActive": 23,
-          "dataLoads": 59
+          "daysActive": 32,
+          "dataLoads": 77
         },
         "LOUISVILLE": {
           "daysActive": 111,
@@ -538,40 +550,40 @@
           "dataLoads": 2
         },
         "MILWAUKEE ": {
-          "daysActive": 24,
-          "dataLoads": 47
+          "daysActive": 26,
+          "dataLoads": 50
         },
         "MONTEREY-SALINAS ": {
           "daysActive": 45,
           "dataLoads": 109
         },
         "NEW ORLEANS ": {
-          "daysActive": 289,
-          "dataLoads": 531
+          "daysActive": 302,
+          "dataLoads": 560
         },
         "OMAHA ": {
           "daysActive": 6,
           "dataLoads": 8
         },
         "ORLANDO-DAYTONA BEACH-MELBOURNE ": {
-          "daysActive": 27,
-          "dataLoads": 63
+          "daysActive": 31,
+          "dataLoads": 73
         },
         "PITTSBURGH ": {
-          "daysActive": 456,
-          "dataLoads": 1307
+          "daysActive": 485,
+          "dataLoads": 1388
         },
         "PORTLAND-AUBURN": {
-          "daysActive": 35,
-          "dataLoads": 67
+          "daysActive": 44,
+          "dataLoads": 82
         },
         "PORTLAND-AUBURN ": {
-          "daysActive": 29,
-          "dataLoads": 65
+          "daysActive": 22,
+          "dataLoads": 53
         },
         "SACRAMNTO-STKTON-MOOESTO ": {
-          "daysActive": 25,
-          "dataLoads": 52
+          "daysActive": 34,
+          "dataLoads": 65
         },
         "SAVANNAH ": {
           "daysActive": 7,
@@ -632,8 +644,12 @@
           "dataLoads": 605
         },
         "2026-10": {
-          "daysActive": 224,
-          "dataLoads": 631
+          "daysActive": 290,
+          "dataLoads": 830
+        },
+        "2026-11": {
+          "daysActive": 106,
+          "dataLoads": 303
         }
       }
     },
@@ -641,20 +657,20 @@
       "companyName": "Entravision Communications",
       "markets": {
         "ALB-DG": {
-          "daysActive": 74,
-          "dataLoads": 374
+          "daysActive": 32,
+          "dataLoads": 159
         },
         "Albuquerque": {
-          "daysActive": 338,
-          "dataLoads": 1744
+          "daysActive": 171,
+          "dataLoads": 709
         },
         "Boston": {
           "daysActive": 1,
           "dataLoads": 0
         },
         "Denver": {
-          "daysActive": 258,
-          "dataLoads": 447
+          "daysActive": 267,
+          "dataLoads": 463
         },
         "El Centro": {
           "daysActive": 6,
@@ -663,14 +679,6 @@
         "El Paso": {
           "daysActive": 1,
           "dataLoads": 4
-        },
-        "KCEC-TV": {
-          "daysActive": 237,
-          "dataLoads": 1080
-        },
-        "KCVR-FM": {
-          "daysActive": 37,
-          "dataLoads": 78
         },
         "KDJT-TV": {
           "daysActive": 53,
@@ -684,17 +692,9 @@
           "daysActive": 2,
           "dataLoads": 2
         },
-        "KINC-TV": {
-          "daysActive": 31,
-          "dataLoads": 87
-        },
-        "KINT-FM": {
-          "daysActive": 507,
-          "dataLoads": 2306
-        },
         "Las Vegas": {
-          "daysActive": 124,
-          "dataLoads": 323
+          "daysActive": 127,
+          "dataLoads": 329
         },
         "Los Angeles": {
           "daysActive": 6,
@@ -705,12 +705,12 @@
           "dataLoads": 8
         },
         "Multi-Market": {
-          "daysActive": 74,
-          "dataLoads": 194
+          "daysActive": 1139,
+          "dataLoads": 5127
         },
         "Phoenix": {
-          "daysActive": 64,
-          "dataLoads": 127
+          "daysActive": 66,
+          "dataLoads": 131
         },
         "Reno": {
           "daysActive": 1,
@@ -755,8 +755,12 @@
           "dataLoads": 653
         },
         "2026-10": {
-          "daysActive": 175,
-          "dataLoads": 463
+          "daysActive": 193,
+          "dataLoads": 500
+        },
+        "2026-11": {
+          "daysActive": 40,
+          "dataLoads": 121
         }
       }
     },
@@ -792,8 +796,8 @@
           "dataLoads": 1
         },
         "Omaha, NE": {
-          "daysActive": 288,
-          "dataLoads": 925
+          "daysActive": 293,
+          "dataLoads": 934
         },
         "Sioux Falls, SD": {
           "daysActive": 1,
@@ -838,8 +842,12 @@
           "dataLoads": 64
         },
         "2026-10": {
-          "daysActive": 26,
-          "dataLoads": 44
+          "daysActive": 28,
+          "dataLoads": 46
+        },
+        "2026-11": {
+          "daysActive": 3,
+          "dataLoads": 7
         }
       }
     },
@@ -862,8 +870,8 @@
       "companyName": "Renda Broadcasting",
       "markets": {
         "Ft. Myers": {
-          "daysActive": 64,
-          "dataLoads": 157
+          "daysActive": 68,
+          "dataLoads": 163
         }
       },
       "monthly": {
@@ -898,6 +906,10 @@
         "2026-10": {
           "daysActive": 7,
           "dataLoads": 12
+        },
+        "2026-11": {
+          "daysActive": 4,
+          "dataLoads": 6
         }
       }
     },
@@ -905,8 +917,8 @@
       "companyName": "Capitol Broadcasting Company",
       "markets": {
         "Raleigh": {
-          "daysActive": 45,
-          "dataLoads": 85
+          "daysActive": 46,
+          "dataLoads": 87
         }
       },
       "monthly": {
@@ -947,6 +959,10 @@
           "dataLoads": 4
         },
         "2026-10": {
+          "daysActive": 1,
+          "dataLoads": 2
+        },
+        "2026-11": {
           "daysActive": 1,
           "dataLoads": 2
         }
