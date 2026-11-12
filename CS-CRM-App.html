@@ -133,6 +133,13 @@
   const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
   const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
 
+  // SCHEDULED SYNC NOTE (2026-11-12): usage-data.json on main is generatedDate 2026-11-11 (committed 11/11 10:00 ET,
+  // after that day's sync), not today, so per the rules it was not used. Fallback: no "Weekly Usage Review - Master.xlsx"
+  // saved after 2026-11-05 was found, so MARKET_USAGE_DATA and the usageDrop flags are unchanged. Trello: no new
+  // touchpoint cards (Sinclair Open Items only got Zendesk support traffic). Outlook: Hearst Harrisburg's Wed 11/11
+  // meeting is no longer on the calendar, so 4 customer meetings remain this week. Jira: Hearst 84->86 (new RO-11359,
+  // RO-11360 WideOrbit feed switch), Entravision 29->28 (RO-11130 resolved), Sinclair stays 46 (RO-11328 Won't Do, new
+  // RO-11355).
   // SCHEDULED SYNC NOTE (2026-11-11): usage-data.json on main is still generatedDate 2026-10-28 (the PC
   // usage pull has not committed for 10 weekdays), so it was not used. Fallback: no "Weekly Usage Review -
   // Master.xlsx" saved after 2026-11-05 was found, so MARKET_USAGE_DATA and the usageDrop flags are unchanged.
@@ -350,6 +357,7 @@
   // Re-checked 2026-11-10: no board has a new touchpoint card since 11/09 (Sinclair Open Items only got Zendesk
   // support-ticket comments from Ryan Beinstein - account-level, no market). Entravision Monterey advanced to its
   // 11/09 Outlook working session with Sean Stade (2027 priority rate card).
+  // Re-checked 2026-11-12: no board has a new touchpoint card since 11/10. No entries changed.
   const MARKET_CALL_DATA = {
     "Hearst Television": {
       "BIRMINGHAM (ANN AND TUSC)": "2026-03-12 (Trello): A touchpoint card exists but has no description or comments logged - no substantive detail available.",
@@ -471,12 +479,18 @@
   // (Resolved 11/10) both resolved; RO-11334 excluded as above. Gray raw 37->38 (new hit is RO-11328's "gray
   // banding" wording - a Sinclair ticket, false positive) stays 29. Nexstar (6), Entravision (raw 31 -> 29),
   // Paramount (0), Renda (1) and Capitol (2) unchanged. usageDrop unchanged (no usage source newer than October).
+  // Re-pulled 2026-11-12: Hearst raw 76->78 -> 86: new RO-11359 (copy Hearst's WideOrbit extract and Nielsen uploads from
+  // Azure) and RO-11360 (generate Hearst RDS from WideOrbit instead of Decentrix), both real Hearst work. Entravision raw
+  // 31->30 -> 28 (RO-11130 Testing Required 11/11). Sinclair raw 47->47 and confirmed stays 46: RO-11328 (Won't Do 11/11)
+  // resolved, new RO-11355 (Ryan Beinstein: show which user made each override in the Overrides report) counted. Gray raw
+  // 38->37 (RO-11328 false positive gone) stays 29. AMCN (6), Nexstar (6), Paramount (0), Renda (1), Capitol (2) unchanged.
+  // usageDrop unchanged (usage-data.json is dated 11/11, not today; no newer workbook).
   const ACCOUNT_SYNC_META = {
     "AMC Networks (AMCN)": { unresolvedTickets: 6, usageDrop: true },
     "Nexstar Media Group": { unresolvedTickets: 6, usageDrop: true },
     "Sinclair Broadcast Group": { unresolvedTickets: 46, usageDrop: false },
-    "Hearst Television": { unresolvedTickets: 84, usageDrop: false },
-    "Entravision Communications": { unresolvedTickets: 29, usageDrop: true },
+    "Hearst Television": { unresolvedTickets: 86, usageDrop: false },
+    "Entravision Communications": { unresolvedTickets: 28, usageDrop: true },
     "Gray Television": { unresolvedTickets: 29, usageDrop: true },
     "Paramount Global": { unresolvedTickets: 0, usageDrop: false },
     "Renda Broadcasting": { unresolvedTickets: 1, usageDrop: true },
@@ -524,6 +538,9 @@
   // Re-checked 2026-11-11: Hearst Pittsburgh drops RO-11174 (Testing Required 11/10); RO-9893 (WTAE Inventory
   // Planning Report) moves up from "+N more". Hearst Orlando drops RO-11322 (Resolved 11/10); RO-2429 (WKCF missing
   // prime-program history) shown in its place. Sinclair Baltimore drops RO-8743 (Done 11/10).
+  // Re-checked 2026-11-12: Entravision Las Vegas drops RO-11130 (Testing Required 11/11). New Hearst RO-11359/RO-11360
+  // cover all Hearst stations (WTAE is only a validation example) and new Sinclair RO-11355 names no market, so none were
+  // mapped to a market.
   const MARKET_TICKETS_DATA = {
     "AMC Networks (AMCN)": {},
     "Nexstar Media Group": {
@@ -567,7 +584,7 @@
     },
     "Entravision Communications": {
       "Denver": "RO-11255: Political Rate Card shows blank/out-of-order rates for KCEC (Denver); RO-11127: Day-of-week ordering wrong on the Denver political rate card; RO-10107: Don wants his sales assistants notified when he makes rate overrides; RO-9867: WoW rate-increase insight over-counts when Denver is combined with Albuquerque (+2 more)",
-      "Las Vegas": "RO-11130: Political-window initialization only filled 15s rates after a partial rerun, leaving 30s/60s blank (KELV-TV); RO-10685: Midday news showing wrong time block, already fixed for Las Vegas (asked to extend to other markets)",
+      "Las Vegas": "RO-10685: Midday news showing wrong time block, already fixed for Las Vegas (asked to extend to other markets)",
       "Albuquerque": "RO-9867: WoW rate-increase insight over-flags; Albuquerque alone behaves correctly, but combining it with Denver over-counts",
       "Phoenix": "RO-8653: Matt wants a talent-fees tab (per-DJ endorsement fee) added to the rate card",
       "El Paso": "RO-10352: Condense same-named Entravision programs into one, sell by time (KUNP)"
@@ -637,16 +654,20 @@
   // same 5 customer meetings kept. Excluded standups, 1:1s, reminder/OOO blocks, Customer Health Review and
   // Media Vertical Grooming (internal), the cancelled Lunch & Learn, Cumulus and SiriusXM meetings, and a personal
   // event. No new Trello or call notes for any of these markets since yesterday.
+  // Rebuilt 2026-11-12 from a fresh Outlook pull (Mon 2026-11-09 00:00 - Sat 2026-11-14 00:00 ET, 20 events):
+  // 4 customer meetings kept. Hearst Harrisburg's Wednesday meeting is no longer on the calendar (a direct "Harrisburg"
+  // search returns nothing this week), so it was dropped. Excluded standups, 1:1s, reminder/OOO blocks, Customer Health
+  // Review and Media Vertical Grooming (internal), the cancelled Lunch & Learn, Cumulus and SiriusXM meetings, and a
+  // personal event.
   const WEEKLY_GLANCE_MONDAY = '2026-11-09';
   const WEEKLY_MEETINGS_DATA = [
     { id: "mon-entravision-monterey", day: "Monday", date: "2026-11-09", time: "4:00 PM ET", company: "Entravision Communications", label: "Monterey", attendees: "Sean Stade", lastCallNotes: "2026-10-12 (Trello): Reconciled Spark proposal-pricing rates against RateOptics (Spark may only ingest 30s rates), corrected KSMS/KSCS political LUR rates to clear violations, and discussed a 2027 three-tier static rate card planned for after the political window closes." },
     { id: "wed-renda-ftmyers", day: "Wednesday", date: "2026-11-11", time: "11:00 AM ET", company: "Renda Broadcasting", label: "Ft. Myers", attendees: "Amber Morgerson", lastCallNotes: "2026-09-30 (Outlook): 'RateOptics Check In and Updates - Renda' meeting held with Renda (A. Morgerson); no detailed notes logged beyond the calendar entry." },
-    { id: "wed-hearst-harrisburg", day: "Wednesday", date: "2026-11-11", time: "1:00 PM ET", company: "Hearst Television", label: "HARRISBURG-LNCSTR-lEB-YORK", attendees: "Ben Warntz", lastCallNotes: "2026-10-28 (Trello): Touchpoint with Ben Warntz (WGAL's local rate-card owner) to restructure the rate card - fold swing-break inventory (7:58-8:00) into Prime A Mon/Wed/Thu/Fri, keep NBA under Sports, and resolve duplicate/misaligned program rows from Traffic feeds; Q2 five-tier card auto-generated live with agreed multipliers (1.16/1.33/2.0/1.20); reconvene in ~2 weeks post-political." },
     { id: "fri-amcn-accountwide", day: "Friday", date: "2026-11-13", time: "12:30 PM ET", company: "AMC Networks (AMCN)", label: "Account-wide", attendees: "Christine Esser, Jason Baron, Cory Angerthal, Richard Bula, and 4 others", lastCallNotes: "(Trello, 2026-11-06) AMCN said Report Assistant/Report Studio look good. Bookings are up ~10% QoQ and ~93% booked to budget. Open items: a percent-rounding bug in previews (fix planned), reconciling the audience-budget method with AMC Research (Tom to share a template), a raw-export option for Copilot/Claude analysis, a seller landing screen preview, a pre/post-log review against WideOrbit automation, and broader AE training deferred to Q1." },
     { id: "fri-hearst-burlington", day: "Friday", date: "2026-11-13", time: "2:00 PM ET", company: "Hearst Television", label: "BURLINGTON-PLATTSBURGH", attendees: "Jill Soulia, Pat Gram", lastCallNotes: "2026-09-22 (Trello): RateOptics training for Alex (a new account associate) covering the Dynamic Rate Card, Advertiser Insights, and Aida proposal review; Jill and Pat remain the final decision-makers on rates." }
   ];
 
-  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-11' };
+  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-12' };
 
   function buildMarkets(companyName) {
     const callData = MARKET_CALL_DATA[companyName] || {};
