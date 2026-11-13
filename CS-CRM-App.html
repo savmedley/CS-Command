@@ -133,6 +133,13 @@
   const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
   const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
 
+  // SCHEDULED SYNC NOTE (2026-11-13): usage-data.json on main is still generatedDate 2026-11-11, not today, so it was
+  // not used; no "Weekly Usage Review - Master.xlsx" saved after 2026-11-05 was found, so MARKET_USAGE_DATA and the
+  // usageDrop flags are unchanged. Trello: no new touchpoint cards (Sinclair Open Items only got Snowflake usage-request
+  // and support traffic). Outlook: Renda Ft. Myers check-in held 11/11 (call entry advanced); same 4 customer meetings
+  // this week. Jira: Sinclair 46->47 (RO-11372, Little Rock/KATV), Hearst 86->85 (RO-11121 resolved, removed from
+  // Burlington). Jira returned intermittent Service Unavailable errors, so tickets updated 11/12 ~08:13-10:37 ET could
+  // not be re-checked this run.
   // SCHEDULED SYNC NOTE (2026-11-12): usage-data.json on main is generatedDate 2026-11-11 (committed 11/11 10:00 ET,
   // after that day's sync), not today, so per the rules it was not used. Fallback: no "Weekly Usage Review - Master.xlsx"
   // saved after 2026-11-05 was found, so MARKET_USAGE_DATA and the usageDrop flags are unchanged. Trello: no new
@@ -385,7 +392,7 @@
       "Omaha, NE": "2026-10-22 (Trello): RateOptics University session to finalize the 2027 rate card - Karen's WOMS-built Q1 2027 card will be uploaded and copied to all 2027 quarters, key sports rates set (NBA regular season $225 minimum, Sunday Night Football $2,700, new NFL Wild Card/Divisional games $3,000), and new features demoed (rate card search bar, Advertiser Details, default rate card); Savannah to add new AEs, and Dan to schedule a post-election pricing strategy session and December AE training."
     },
     "Renda Broadcasting": {
-      "Ft. Myers": "2026-09-30 (Outlook): 'RateOptics Check In and Updates - Renda' meeting held with Renda (A. Morgerson); no detailed notes logged beyond the calendar entry."
+      "Ft. Myers": "2026-11-11 (Outlook): 'RateOptics Check In and Updates - Renda' meeting held with Amber Morgerson; no detailed notes logged beyond the calendar entry (previous check-in was 2026-09-30)."
     },
     "Capitol Broadcasting Company": {
       "Raleigh": "2026-06-12 (Trello): AEs don't yet fully trust RateOptics as the source of truth for rates; plan is to set up weekly small-group AE walkthroughs using Aida/Ad Insights."
@@ -485,11 +492,13 @@
   // resolved, new RO-11355 (Ryan Beinstein: show which user made each override in the Overrides report) counted. Gray raw
   // 38->37 (RO-11328 false positive gone) stays 29. AMCN (6), Nexstar (6), Paramount (0), Renda (1), Capitol (2) unchanged.
   // usageDrop unchanged (usage-data.json is dated 11/11, not today; no newer workbook).
+  // Re-pulled 2026-11-13 (delta of RO tickets updated since the 11/12 sync): Sinclair 46->47 (new RO-11372, KATV WOMS
+  // export rate mismatch / unmappable programs); Hearst 86->85 (RO-11121 Hearst Burlington Done 11/12). Others unchanged.
   const ACCOUNT_SYNC_META = {
     "AMC Networks (AMCN)": { unresolvedTickets: 6, usageDrop: true },
     "Nexstar Media Group": { unresolvedTickets: 6, usageDrop: true },
-    "Sinclair Broadcast Group": { unresolvedTickets: 46, usageDrop: false },
-    "Hearst Television": { unresolvedTickets: 86, usageDrop: false },
+    "Sinclair Broadcast Group": { unresolvedTickets: 47, usageDrop: false },
+    "Hearst Television": { unresolvedTickets: 85, usageDrop: false },
     "Entravision Communications": { unresolvedTickets: 28, usageDrop: true },
     "Gray Television": { unresolvedTickets: 29, usageDrop: true },
     "Paramount Global": { unresolvedTickets: 0, usageDrop: false },
@@ -553,7 +562,7 @@
       "Nashville, TN": "RO-11189: AOS Upsert pipeline still running daily and failing since Sinclair stopped using AOS (+4 more markets on the same ticket)",
       "Harrisburg, PA": "RO-11189: AOS Upsert pipeline still running daily and failing since Sinclair stopped using AOS (+4 more markets on the same ticket)",
       "Rochester, NY": "RO-11189: AOS Upsert pipeline still running daily and failing since Sinclair stopped using AOS (+4 more markets on the same ticket)",
-      "Little Rock, AR": "RO-11194: WOMS auto-map picks the right show but wrong airing (KATV); RO-11192: WOMS XML export sends unrounded tier-cascaded override values (KATV)",
+      "Little Rock, AR": "RO-11372: WOMS XML export rates don't match the rate card and unmatched programs can't be mapped (KATV); RO-11194: WOMS auto-map picks the right show but wrong airing (KATV); RO-11192: WOMS XML export sends unrounded tier-cascaded override values (KATV)",
       "Seattle, WA (TV)": "RO-10809: Newly added traffic-system program not sorted near matching day-of-week/time programs (KOMO Dynamic Rate Card); RO-5604: Rate Card Inventory Code/Programs filters load very slowly (KOMO, 767-segment example)",
       "Austin, TX": "RO-10281: Political-window initialization popup doesn't name which window(s) it affects when multiple are selected (KEYE); RO-7319: Close rate should never be below P3 rate (multi-market ticket incl. Austin)",
       "Baltimore, MD": "RO-9800: Holding Capacity feature requested, using 3 Baltimore stations as the worked example; RO-6876: WBFF 6a News rates barely moved after a reference-rate fix",
@@ -564,7 +573,7 @@
     },
     "Hearst Television": {
       "Pittsburgh": "RO-11175: Lauren wants 2027 Q1/Q2 rates set, mostly for sports and specials; RO-10421: Hearst (especially WTAE) wants ratings data incorporated into Aida; RO-10294: WOMS auto-map misses recurring WTAE programs (Family Feud, Jennifer Hudson, DWTS, etc.) - Lauren compiling the full list; RO-9893: Hearst WTAE Inventory Planning Report (+5 more)",
-      "BURLINGTON-PLATTSBURGH": "RO-11122: Wants past P-Code quarter metrics, 2+ years back, skipping political years; RO-11121: Hearst Burlington asks why a program has no rate; RO-10762: SQAD metrics requested by Hearst Burlington; RO-10294: Program matching so Burlington can upload RateOptics rates into WOMS",
+      "BURLINGTON-PLATTSBURGH": "RO-11122: Wants past P-Code quarter metrics, 2+ years back, skipping political years; RO-10762: SQAD metrics requested by Hearst Burlington; RO-10294: Program matching so Burlington can upload RateOptics rates into WOMS",
       "DES MOINES-AMES": "RO-11172: KCCI political-minutes booking detail cited in the cross-customer political-LUR bug; RO-11150: Add an LY AUR metric; RO-11149: New 'under 70% low predicted sellout' insight (+1 more)",
       "MONTEREY-SALINAS": "RO-11194: WOMS live mappings point at segments with no current rates on several stations incl. KSBW; RO-9737: Jeff's WideOrbit traffic-data cleanup call (shared with Cincinnati); RO-9734: Duplicate KSBW_ET program rows after a station/program breakout; RO-3638: KSBW_ET pipeline failures in generateRDS step (+2 more)",
       "CINCINNATI": "RO-11013: Verification case for the political-LUR credited/displaced-spot bug (WLWT); RO-9737: Jeff's WideOrbit traffic-data cleanup call (shared with Monterey-Salinas)",
@@ -667,7 +676,7 @@
     { id: "fri-hearst-burlington", day: "Friday", date: "2026-11-13", time: "2:00 PM ET", company: "Hearst Television", label: "BURLINGTON-PLATTSBURGH", attendees: "Jill Soulia, Pat Gram", lastCallNotes: "2026-09-22 (Trello): RateOptics training for Alex (a new account associate) covering the Dynamic Rate Card, Advertiser Insights, and Aida proposal review; Jill and Pat remain the final decision-makers on rates." }
   ];
 
-  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-12' };
+  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-13' };
 
   function buildMarkets(companyName) {
     const callData = MARKET_CALL_DATA[companyName] || {};
