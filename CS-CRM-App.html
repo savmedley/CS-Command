@@ -133,6 +133,11 @@
   const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
   const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
 
+  // SCHEDULED SYNC NOTE (2026-11-20): usage-data.json on main is generatedDate 2026-11-17, not today (the PC usage pull has not
+  // committed for 11/18-11/20), so it was not used; no "Weekly Usage Review - Master.xlsx" saved after 2026-11-05 was found, so
+  // MARKET_USAGE_DATA and the usageDrop flags are unchanged. Trello: no new touchpoint cards (Sinclair Open Items only got the
+  // Washington DC "Get Data" support thread). Outlook: same 9 customer meetings this week. Jira: counts unchanged; Sinclair's new
+  // RO-11419 (Washington DC / West Palm Beach Get Data bug) offsets RO-11279 (Testing Required 11/19).
   // SCHEDULED SYNC NOTE (2026-11-19): usage-data.json on main is generatedDate 2026-11-17, not today (the PC usage pull has not
   // committed for 11/18 or 11/19), so it was not used; no "Weekly Usage Review - Master.xlsx" saved after 2026-11-05 was found,
   // so MARKET_USAGE_DATA and the usageDrop flags are unchanged.
@@ -532,6 +537,11 @@
   // its duplicate RO-11402 was closed Won't Do). Entravision raw stays 30 but confirmed 28->29: new RO-11412 (Las Vegas KELV/KINC
   // segment filters hang) counted; previously-excluded false positive RO-11257 moved to Testing Required. Gray raw 37->36 (RO-11257
   // false positive gone) stays 29. RO-11405 (Audacy) only name-drops Nexstar - not counted. Others unchanged. usageDrop unchanged.
+  // Re-pulled 2026-11-20 (delta of RO tickets updated since the 11/19 sync): Sinclair raw stays 47 and confirmed stays 46 - new
+  // RO-11419 (Dynamic Rate Card "No data" after changing market; Robbie Lewis, Washington DC + West Palm Beach) counted, RO-11279
+  // (Inventory Insights section-code breakout) Testing Required 11/19. RO-11419 only lists Hearst/Entravision/AMCN as sharing the
+  // hidden-filter config - not counted for them. Gray raw 36->35 (RO-11279 false positive gone) stays 29. RO-11420 (CMG) and
+  // RO-11421 (Audacy) are not tracked accounts. Others unchanged. usageDrop unchanged.
   const ACCOUNT_SYNC_META = {
     "AMC Networks (AMCN)": { unresolvedTickets: 7, usageDrop: true },
     "Nexstar Media Group": { unresolvedTickets: 6, usageDrop: true },
@@ -596,6 +606,8 @@
   // Re-checked 2026-11-18: Nexstar Indianapolis drops RO-11316 (Testing Required 11/18). No new market-specific tickets.
   // Re-checked 2026-11-19: new RO-11409 (Nexstar, explicitly Champaign) added to Champaign; new RO-11412 (Entravision, explicitly
   // Las Vegas KELV-TV/KINC-TV) added to Las Vegas. Sinclair's new RO-11401 is account-wide (no market).
+  // Re-checked 2026-11-20: new Sinclair RO-11419 explicitly names Washington DC and West Palm Beach (Zendesk #54883), so it is added
+  // to both. No market ticket resolved since 11/19.
   const MARKET_TICKETS_DATA = {
     "AMC Networks (AMCN)": {},
     "Nexstar Media Group": {
@@ -615,7 +627,9 @@
       "Las Vegas, NV": "RO-7993: Discount-vs-weeks-prior pricing idea, starting with oversold station KNSV",
       "Abilene, TX": "RO-7319: Close rate should never be below P3 rate (multi-market ticket naming KTXS/Abilene)",
       "Albany, NY": "RO-7319: Close rate should never be below P3 rate (multi-market ticket incl. Albany, NY)",
-      "Amarillo, TX": "RO-7319: Close rate should never be below P3 rate (multi-market ticket incl. Amarillo, TX)"
+      "Amarillo, TX": "RO-7319: Close rate should never be below P3 rate (multi-market ticket incl. Amarillo, TX)",
+      "Washington, DC": "RO-11419: Dynamic Rate Card returns 'No data' after switching markets - Get Data enabled before the program list reloads (reported for DC)",
+      "West Palm Beach, FL": "RO-11419: Dynamic Rate Card returns 'No data' after switching markets - Get Data enabled before the program list reloads (West Palm Beach reported the same)"
     },
     "Hearst Television": {
       "Pittsburgh": "RO-11175: Lauren wants 2027 Q1/Q2 rates set, mostly for sports and specials; RO-10421: Hearst (especially WTAE) wants ratings data incorporated into Aida; RO-10294: WOMS auto-map misses recurring WTAE programs (Family Feud, Jennifer Hudson, DWTS, etc.) - Lauren compiling the full list; RO-9893: Hearst WTAE Inventory Planning Report (+5 more)",
@@ -727,6 +741,10 @@
   // nothing), so it was dropped; Sinclair's Tuesday call now shows at 1:00 PM with Robert Lewis, Ryan Beinstein, Ryan McCoy and
   // Billy Robbins. Myrtle Beach and Sinclair last-call notes now use their new 11/17 Trello cards. Same exclusions as 11/17 plus
   // Jyothi PTO, EB Medical Leave and the Cumulus touchpoint (not tracked).
+  // Rebuilt 2026-11-20 from a fresh Outlook pull (Mon 2026-11-16 00:00 - Sat 2026-11-21 00:00 ET, 26 events, none cancelled): the
+  // same 9 customer meetings with unchanged times and rosters. Same exclusions as 11/18 (standups, 1:1s, Town Hall, AI Investment
+  // Committee, PTO/leave/OOO and reminder blocks, Media Vertical Grooming) plus the CMG ProposalPro session and the Cumulus
+  // touchpoint (not tracked accounts). No new Trello notes for any of these markets since 11/19.
   const WEEKLY_GLANCE_MONDAY = '2026-11-16';
   const WEEKLY_MEETINGS_DATA = [
     { id: "tue-nexstar-myrtlebeach", day: "Tuesday", date: "2026-11-17", time: "12:00 PM ET", company: "Nexstar Media Group", label: "Myrtle Beach", attendees: "Jeff Taylor, Amy Bonnell, Matt Bowman", lastCallNotes: "2026-11-17 (Trello): Touchpoint with Matt Bowman and Jeff Taylor (WBTW) - Matt is reworking tier multipliers because past submit rates ran 3-4x above actual closes (e.g. 7-8a Level 2 at $540 vs ~$170-200 closes) and will share a finalized Q2 card once Nexstar corporate guidance is confirmed; sports stays on overrides with a $1,000 placeholder for the NCAA March Madness bracket preview, and the new CW affiliate will be priced once its history is available." },
@@ -740,7 +758,7 @@
     { id: "fri-hearst-cincinnati", day: "Friday", date: "2026-11-20", time: "1:30 PM ET", company: "Hearst Television", label: "CINCINNATI", attendees: "Julie Gossard, Jeff Doerrer", lastCallNotes: "2026-10-21 (Trello): RateOptics touchpoint with Julie Gossard (rate cards/political windows), Jeff Doerrer (political window dates), and Lisa Davis (training/access); confirmed political and RP use the same priority-code card, positive feedback on the new rate-card search bar and advertiser-detail features, and next steps set for Q1 rate upload and 2027 political window setup." }
   ];
 
-  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-19' };
+  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-20' };
 
   function buildMarkets(companyName) {
     const callData = MARKET_CALL_DATA[companyName] || {};
