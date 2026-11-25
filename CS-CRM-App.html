@@ -133,6 +133,11 @@
   const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
   const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
 
+  // SCHEDULED SYNC NOTE (2026-11-25): usage-data.json on main is generatedDate 2026-11-23, not today (no PC usage pull committed
+  // for 11/24 or 11/25 as of ~08:10 ET), so it was not used; the newest "Weekly Usage Review - Master.xlsx" is still the 2026-11-05 save,
+  // so MARKET_USAGE_DATA and the usageDrop flags are unchanged. Trello: new 11/24 Sinclair account-wide touchpoint (no market row; a
+  // personal-health aside in it was left out). Outlook: the Tue 11/24 Nexstar Myrtle Beach and Hearst Orlando occurrences are no longer on
+  // the calendar (Myrtle Beach series resumes 12/01) - 5 customer meetings this week. Jira: Sinclair 48->50, AMCN 7->6.
   // SCHEDULED SYNC NOTE (2026-11-24): usage-data.json on main is generatedDate 2026-11-23, not today (no PC usage pull committed
   // for 11/24 as of ~08:15 ET), so it was not used; no "Weekly Usage Review - Master.xlsx" saved after 2026-11-05 was found, so
   // MARKET_USAGE_DATA and the usageDrop flags are unchanged. Trello: new 11/23 Hearst Des Moines touchpoint (Kelly Beeck). Outlook:
@@ -560,10 +565,15 @@
   // (Rate Card Program filter never loads / Get Data disabled, segments query plan flip; Zendesk #55044) both open and both name
   // Sinclair as the customer. Their only Entravision mention is an unanalyzed "still unknown" note - not counted. RO-11201/RO-11182
   // (WOMS wizard) name no tracked account. Others unchanged. usageDrop unchanged.
+  // Re-pulled 2026-11-25 (delta of RO tickets updated since the 11/24 sync): Sinclair 48->50 - new RO-11434 (WOMS export changes), RO-11435
+  // (Show Advertisers feedback) and RO-11436 (Sports-Oklahoma Overtime as M-F) are all Sinclair asks from the 11/24 touchpoint/Zendesk;
+  // RO-11372 (KATV WOMS export rate mismatch) Done 11/24. AMCN 7->6: RO-11301 (Report Assistant AMCN canon fixes) Done 11/24 (raw "AMCN"
+  // hits now 9, same RO-11013/RO-11334/RO-11419 exclusions). RO-11421/RO-11283 (Audacy) and RO-11293 (CMG) are not tracked accounts.
+  // Others unchanged. usageDrop unchanged (usage-data.json is dated 11/23, not today; no workbook newer than 11/05).
   const ACCOUNT_SYNC_META = {
-    "AMC Networks (AMCN)": { unresolvedTickets: 7, usageDrop: true },
+    "AMC Networks (AMCN)": { unresolvedTickets: 6, usageDrop: true },
     "Nexstar Media Group": { unresolvedTickets: 6, usageDrop: true },
-    "Sinclair Broadcast Group": { unresolvedTickets: 48, usageDrop: false },
+    "Sinclair Broadcast Group": { unresolvedTickets: 50, usageDrop: false },
     "Hearst Television": { unresolvedTickets: 83, usageDrop: false },
     "Entravision Communications": { unresolvedTickets: 29, usageDrop: true },
     "Gray Television": { unresolvedTickets: 29, usageDrop: true },
@@ -641,7 +651,7 @@
       "Nashville, TN": "",
       "Harrisburg, PA": "",
       "Rochester, NY": "",
-      "Little Rock, AR": "RO-11372: WOMS XML export rates don't match the rate card and unmatched programs can't be mapped (KATV); RO-11194: WOMS auto-map picks the right show but wrong airing (KATV); RO-11192: WOMS XML export sends unrounded tier-cascaded override values (KATV)",
+      "Little Rock, AR": "RO-11414: WOMS wizard should hide expired programs, export mappings to Excel and always export all forward weeks (KATV testing); RO-11194: WOMS auto-map picks the right show but wrong airing (KATV); RO-11192: WOMS XML export sends unrounded tier-cascaded override values (KATV)",
       "Seattle, WA (TV)": "RO-10809: Newly added traffic-system program not sorted near matching day-of-week/time programs (KOMO Dynamic Rate Card); RO-5604: Rate Card Inventory Code/Programs filters load very slowly (KOMO, 767-segment example)",
       "Austin, TX": "RO-11432: Program filter never loads so Get Data stays disabled (reported for KEYE/NEYE, segments query timeouts); RO-11433: Duplicate of RO-11432; RO-10281: Political-window initialization popup doesn't name which window(s) it affects when multiple are selected (KEYE); RO-7319: Close rate should never be below P3 rate (multi-market ticket incl. Austin)",
       "Mobile, AL": "RO-11432: Program filter never loads so Get Data stays disabled (reported for Diane Farris on WJTC/EEAR, segments query timeouts); RO-11433: Duplicate of RO-11432",
@@ -650,6 +660,7 @@
       "Abilene, TX": "RO-7319: Close rate should never be below P3 rate (multi-market ticket naming KTXS/Abilene)",
       "Albany, NY": "RO-7319: Close rate should never be below P3 rate (multi-market ticket incl. Albany, NY)",
       "Amarillo, TX": "RO-7319: Close rate should never be below P3 rate (multi-market ticket incl. Amarillo, TX)",
+      "Oklahoma City, OK": "RO-11436: Set the Sports-Oklahoma Overtime program to a single M-F sports row instead of per-day rows (same rule as the Pittsburgh sports show)",
       "Washington, DC": "RO-11419: Dynamic Rate Card returns 'No data' after switching markets - Get Data enabled before the program list reloads (reported for DC)",
       "West Palm Beach, FL": "RO-11419: Dynamic Rate Card returns 'No data' after switching markets - Get Data enabled before the program list reloads (West Palm Beach reported the same)"
     },
@@ -772,13 +783,11 @@
     { id: "mon-hearst-monterey", day: "Monday", date: "2026-11-23", time: "1:00 PM ET", company: "Hearst Television", label: "MONTEREY-SALINAS", attendees: "Dawnelle Cook, Ken Jones, Brandon Marapao", lastCallNotes: "2026-11-23 (Outlook): 'RateOptics Monthly Touchpoint | Hearst Monterey' held with Dawnelle Cook, Ken Jones and Brandon Marapao; no Trello notes were logged. Previous entry (Outlook, 09/25) set up the monthly touchpoint cadence." },
     { id: "mon-hearst-desmoines", day: "Monday", date: "2026-11-23", time: "3:30 PM ET", company: "Hearst Television", label: "DES MOINES-AMES", attendees: "Kelly Beeck", lastCallNotes: "2026-11-23 (Trello): Touchpoint with Kelly Beeck (KCCI) - Q1 programming is now loaded from CPS and she is restarting sales manager rate meetings; agreed a sales manager refresher (rate card + Rate Performance) on Dec 9 9am CT and an AE session (quarterly default card, Advertiser Insights, ADA) on Jan 5 4pm CT; Kelly to send the AE list for provisioning and reconnect with Pittsburgh on the WOMS rate load." },
     { id: "mon-entravision-monterey", day: "Monday", date: "2026-11-23", time: "4:00 PM ET", company: "Entravision Communications", label: "Monterey", attendees: "Sean Stade", lastCallNotes: "2026-11-23 (Outlook): 'RateOptics 2027 Rate Card Setup | Entravision Monterey' session held with Sean Stade; no notes logged yet. Prior session 11/09 ('Rate Optics - Monterey (2027 Priority Rate Card)') also had no notes. Last detailed notes (Trello, 10/12): Reconciled Spark proposal-pricing rates against RateOptics (Spark may only ingest 30s rates), corrected KSMS/KSCS political LUR rates to clear violations, and discussed a 2027 three-tier static rate card planned for after the political window closes." },
-    { id: "tue-sinclair-accountwide", day: "Tuesday", date: "2026-11-24", time: "11:00 AM ET", company: "Sinclair Broadcast Group", label: "Account-wide", attendees: "Robert Lewis, Ryan Beinstein, Dominick Latorre, Ryan McCoy, Billy Robbins", lastCallNotes: "(Trello, 2026-11-17) Robert Lewis welcomed the rate-card section-header refactor, collapsible emailed-reports page and the \"Section Level\" rename; Political Rate Card adoption is slowed by no rep-firm integration and cumbersome initialization (ideas: seed baselines from AdImpact projections, rep-firm API/file-drop scoped for Dec/Jan); Sports Rate Card rollout and 2028 political planning moved to next week with Ryan, and the skim default-by-sections release is targeted after Thanksgiving." },
-    { id: "tue-nexstar-myrtlebeach", day: "Tuesday", date: "2026-11-24", time: "12:00 PM ET", company: "Nexstar Media Group", label: "Myrtle Beach", attendees: "Jeff Taylor, Amy Bonnell, Matt Bowman", lastCallNotes: "2026-11-17 (Trello): Touchpoint with Matt Bowman and Jeff Taylor (WBTW) - Matt is reworking tier multipliers because past submit rates ran 3-4x above actual closes (e.g. 7-8a Level 2 at $540 vs ~$170-200 closes) and will share a finalized Q2 card once Nexstar corporate guidance is confirmed; sports stays on overrides with a $1,000 placeholder for the NCAA March Madness bracket preview, and the new CW affiliate will be priced once its history is available." },
-    { id: "tue-hearst-orlando", day: "Tuesday", date: "2026-11-24", time: "2:00 PM ET", company: "Hearst Television", label: "ORLANDO-DAYTONA BEACH-MELBOURNE", attendees: "Sam Johnson, Austin Shea", lastCallNotes: "2026-11-20 (Outlook): 'RateOptics Touchpoint | WKCF Orlando' was on the calendar (moved to 2:30 PM) with Austin Shea and Sam Johnson; no Trello notes were logged and a follow-up is booked for Tue 11/24. Last logged detail (Outlook, 09/22) had no notes either." },
+    { id: "tue-sinclair-accountwide", day: "Tuesday", date: "2026-11-24", time: "11:00 AM ET", company: "Sinclair Broadcast Group", label: "Account-wide", attendees: "Robert Lewis, Ryan Beinstein, Dominick Latorre, Ryan McCoy, Billy Robbins", lastCallNotes: "(Trello, 2026-11-24) Weekly touchpoint with Robert Lewis and Ryan Beinstein: Q1 WOMS export tests (Little Rock, Birmingham) matched 100% of rates where programs exist in both systems; agreed to drop the export date box, hide historical programs, tighten day/time matching and add an 'Export mismatch report', plus a 5-market feature-flagged Sports Rate Card pilot. Robert covers as primary liaison for the next 8-12 weeks; political review set for next Tuesday with Alex." },
     { id: "wed-hearst-harrisburg", day: "Wednesday", date: "2026-11-25", time: "1:00 PM ET", company: "Hearst Television", label: "HARRISBURG-LNCSTR-lEB-YORK", attendees: "Ben Warntz", lastCallNotes: "2026-10-28 (Trello): Touchpoint with Ben Warntz (WGAL's local rate-card owner) to restructure the rate card - fold swing-break inventory (7:58-8:00) into Prime A Mon/Wed/Thu/Fri, keep NBA under Sports, and resolve duplicate/misaligned program rows from Traffic feeds; Q2 five-tier card auto-generated live with agreed multipliers (1.16/1.33/2.0/1.20); reconvene in ~2 weeks post-political." }
   ];
 
-  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-24' };
+  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-25' };
 
   function buildMarkets(companyName) {
     const callData = MARKET_CALL_DATA[companyName] || {};
