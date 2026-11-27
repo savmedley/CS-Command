@@ -133,6 +133,11 @@
   const TIERS = ['Enterprise', 'Mid-Market', 'SMB'];
   const HEALTH_SCORES = ['Green', 'Yellow', 'Red'];
 
+  // SCHEDULED SYNC NOTE (2026-11-27): usage-data.json on main is still generatedDate 2026-11-25, not today (no PC usage pull committed
+  // for 11/26-11/27 - Thanksgiving break), so it was not used; no "Weekly Usage Review - Master.xlsx" saved after 2026-11-05 was found,
+  // so MARKET_USAGE_DATA and the usageDrop flags are unchanged. Trello: no new touchpoint cards on any tracked account board since 11/24
+  // (Sinclair Open Items only had support-card updates). Outlook: same 5 customer meetings this week (AMCN's Fri 11/27 check-in
+  // cancelled). Jira: only 3 RO tickets updated since 11/26 (RO-11238, RO-9285, RO-10707), none resolved or new - no count changes.
   // SCHEDULED SYNC NOTE (2026-11-26): usage-data.json on main is generatedDate 2026-11-25, not today (no PC usage pull committed for
   // 11/26 - Thanksgiving), so it was not used; no "Weekly Usage Review - Master.xlsx" saved after 2026-11-05 was found, so
   // MARKET_USAGE_DATA and the usageDrop flags are unchanged. Trello: no new market touchpoint cards since 11/25 (a second 11/24 Sinclair
@@ -580,6 +585,8 @@
   // anymore, reported by Ben at Hearst Harrisburg). RO-11201 (WOMS wizard) went to Testing Required but names no tracked account;
   // RO-11437 (Audacy) is not a tracked account. Others unchanged. usageDrop unchanged (usage-data.json is dated 11/25, not today; no
   // workbook newer than 11/05).
+  // Re-pulled 2026-11-27: only RO-11238, RO-9285 and RO-10707 were updated since the 11/26 sync - none resolved, none new. All counts
+  // unchanged. usageDrop unchanged (usage-data.json is dated 11/25, not today; no workbook newer than 11/05).
   const ACCOUNT_SYNC_META = {
     "AMC Networks (AMCN)": { unresolvedTickets: 6, usageDrop: true },
     "Nexstar Media Group": { unresolvedTickets: 6, usageDrop: true },
@@ -651,6 +658,7 @@
   // the reported markets, so both are added to Austin and to Mobile (new entry). Other channel pairs in it are test cases only.
   // Re-checked 2026-11-26: new RO-11438 (Ben at Hearst Harrisburg, day-of-week edit) added to HARRISBURG-LNCSTR-lEB-YORK. No market
   // ticket resolved since 11/25.
+  // Re-checked 2026-11-27: no new or resolved market tickets since 11/26 - no entries changed.
   const MARKET_TICKETS_DATA = {
     "AMC Networks (AMCN)": {},
     "Nexstar Media Group": {
@@ -794,6 +802,8 @@
   // meetings. AMCN's Fri 11/27 Weekly Check In is cancelled (Thanksgiving) and excluded. Harrisburg's last-call notes now reflect the
   // 11/25 call. Excluded standups, 1:1s, PTO/OOO/leave and reminder blocks, Thanksgiving holiday, Customer Health Review (internal) and
   // the cancelled Media Vertical Grooming.
+  // Rebuilt 2026-11-27 from a fresh Outlook pull (Mon 2026-11-23 00:00 - Sat 2026-11-28 00:00 ET, 24 events): the same 5 customer
+  // meetings with unchanged times and rosters; AMCN's Fri 11/27 check-in remains cancelled. No new Trello notes for these markets.
   const WEEKLY_GLANCE_MONDAY = '2026-11-23';
   const WEEKLY_MEETINGS_DATA = [
     { id: "mon-hearst-monterey", day: "Monday", date: "2026-11-23", time: "1:00 PM ET", company: "Hearst Television", label: "MONTEREY-SALINAS", attendees: "Dawnelle Cook, Ken Jones, Brandon Marapao", lastCallNotes: "2026-11-23 (Outlook): 'RateOptics Monthly Touchpoint | Hearst Monterey' held with Dawnelle Cook, Ken Jones and Brandon Marapao; no Trello notes were logged. Previous entry (Outlook, 09/25) set up the monthly touchpoint cadence." },
@@ -803,7 +813,7 @@
     { id: "wed-hearst-harrisburg", day: "Wednesday", date: "2026-11-25", time: "1:00 PM ET", company: "Hearst Television", label: "HARRISBURG-LNCSTR-lEB-YORK", attendees: "Ben Warntz", lastCallNotes: "2026-11-25 (Outlook): 'RateOptics Touchpoint | Hearst Harrisburg' held with Ben Warntz; no Trello notes logged. Same-day Jira RO-11438 records Ben's ask to change some Sat/Sun programming to Sunday-only, which the rate card's edit feature no longer allows. Last detailed notes (Trello, 10/28): rate card restructure - swing-break inventory folded into Prime A and a Q2 five-tier card generated with agreed multipliers." }
   ];
 
-  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-26' };
+  const EXTERNAL_DATA = { lastSyncedAt: '2026-11-27' };
 
   function buildMarkets(companyName) {
     const callData = MARKET_CALL_DATA[companyName] || {};
